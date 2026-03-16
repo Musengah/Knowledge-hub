@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Uploads - Knowledge Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .nav-links a {
+            margin-left: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .login-prompt a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .videos-list {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .video-item {
+            display: flex;
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            align-items: center;
+        }
+        
+        .video-item:last-child {
+            border-bottom: none;
+        }
+        
+        .thumbnail {
+            width: 120px;
+            height: 68px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-right: 20px;
+        }
+        
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-info {
+            flex: 1;
+        }
+        
+        .video-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .video-meta {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
+        .video-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .edit-btn {
+            background: #3498db;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background: #2980b9;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .modal h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .confirm-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .cancel-btn {
+            background: #95a5a6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .edit-form {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .save-btn {
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .cancel-edit-btn {
+            background: #95a5a6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Knowledge Hub</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="browse.html">Browse</a>
+            <a href="submit.html">Upload</a>
+            <a href="my-uploads.html">My Uploads</a>
+            <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <div id="message" class="message"></div>
+    
+    <div id="login-prompt" class="login-prompt" style="display: none;">
+        <p>Please <a href="login.html">log in</a> to see your uploaded videos.</p>
+    </div>
+    
+    <div id="uploads-container" style="display: none;">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">My Uploaded Videos</h2>
+        <div id="videos-list" class="videos-list">
+            <div style="text-align: center; padding: 50px; color: #7f8c8d;">Loading your videos...</div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <h3>Delete Video</h3>
+            <p>Are you sure you want to delete this video? This cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="confirm-btn" onclick="confirmDelete()">Delete</button>
+                <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div id="edit-form" class="edit-form">
+        <h3 style="margin-top: 0;">Edit Video</h3>
+        <input type="hidden" id="edit-video-id">
+        
+        <div class="form-group">
+            <label>Title *</label>
+            <input type="text" id="edit-title">
+        </div>
+        
+        <div class="form-group">
+            <label>Category *</label>
+            <select id="edit-category">
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Biology">Biology</option>
+                <option value="Engineering">Engineering</option>
+                <option value="History">History</option>
+                <option value="Literature">Literature</option>
+                <option value="Language Learning">Language Learning</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Institution (optional)</label>
+            <input type="text" id="edit-institution">
+        </div>
+        
+        <div class="form-group">
+            <label>Tags * (comma separated)</label>
+            <input type="text" id="edit-tags">
+        </div>
+        
+        <div class="form-group">
+            <label>Description (optional)</label>
+            <textarea id="edit-description" rows="4"></textarea>
+        </div>
+        
+        <div>
+            <button class="save-btn" onclick="saveEdit()">Save Changes</button>
+            <button class="cancel-edit-btn" onclick="cancelEdit()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let currentUser = null;
+        let videoToDelete = null;
+        
+        window.onload = function() {
+            checkAuth();
+        };
+        
+        async function checkAuth() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (user) {
+                currentUser = user;
+                document.getElementById('login-prompt').style.display = 'none';
+                document.getElementById('uploads-container').style.display = 'block';
+                loadUserVideos();
+            } else {
+                document.getElementById('login-prompt').style.display = 'block';
+                document.getElementById('uploads-container').style.display = 'none';
+            }
+        }
+        
+        async function loadUserVideos() {
+            try {
+                const { data: videos, error } = await supabaseClient
+                    .from('videos')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                const container = document.getElementById('videos-list');
+                
+                if (!videos || videos.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 50px; color: #7f8c8d;">You haven\'t uploaded any videos yet. <a href="submit.html">Upload your first video!</a></div>';
+                    return;
+                }
+                
+                let html = '';
+                for (let video of videos) {
+                    const thumbnailUrl = `https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`;
+                    
+                    html += `
+                        <div class="video-item">
+                            <div class="thumbnail">
+                                <img src="${thumbnailUrl}" alt="${video.title}" onerror="this.src='https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg'">
+                            </div>
+                            <div class="video-info">
+                                <div class="video-title">${escapeHtml(video.title)}</div>
+                                <div class="video-meta">
+                                    ${escapeHtml(video.category)} 
+                                    ${video.institution ? ' · ' + escapeHtml(video.institution) : ''}
+                                    · Uploaded ${new Date(video.created_at).toLocaleDateString()}
+                                </div>
+                            </div>
+                            <div class="video-actions">
+                                <button class="action-btn edit-btn" onclick="openEdit('${video.id}')">Edit</button>
+                                <button class="action-btn delete-btn" onclick="openDelete('${video.id}')">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                showMessage('Error loading your videos', 'error');
+            }
+        }
+        
+        function openEdit(videoId) {
+            // Find and populate form with video data
+            supabaseClient
+                .from('videos')
+                .select('*')
+                .eq('id', videoId)
+                .single()
+                .then(({ data: video, error }) => {
+                    if (error) throw error;
+                    
+                    document.getElementById('edit-video-id').value = video.id;
+                    document.getElementById('edit-title').value = video.title;
+                    document.getElementById('edit-category').value = video.category;
+                    document.getElementById('edit-institution').value = video.institution || '';
+                    document.getElementById('edit-tags').value = video.tags || '';
+                    document.getElementById('edit-description').value = video.description || '';
+                    
+                    document.getElementById('edit-form').style.display = 'block';
+                    window.scrollTo({ top: document.getElementById('edit-form').offsetTop - 100, behavior: 'smooth' });
+                });
+        }
+        
+        async function saveEdit() {
+            const videoId = document.getElementById('edit-video-id').value;
+            const title = document.getElementById('edit-title').value;
+            const category = document.getElementById('edit-category').value;
+            const institution = document.getElementById('edit-institution').value;
+            const tags = document.getElementById('edit-tags').value;
+            const description = document.getElementById('edit-description').value;
+            
+            if (!title || !category || !tags) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('videos')
+                    .update({
+                        title: title,
+                        category: category,
+                        institution: institution || null,
+                        tags: tags,
+                        description: description || null
+                    })
+                    .eq('id', videoId)
+                    .eq('user_id', currentUser.id); // Extra safety check
+                
+                if (error) throw error;
+                
+                showMessage('Video updated successfully!', 'success');
+                cancelEdit();
+                loadUserVideos(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Error updating video:', error);
+                showMessage('Error updating video', 'error');
+            }
+        }
+        
+        function cancelEdit() {
+            document.getElementById('edit-form').style.display = 'none';
+        }
+        
+        function openDelete(videoId) {
+            videoToDelete = videoId;
+            document.getElementById('delete-modal').style.display = 'block';
+        }
+        
+        async function confirmDelete() {
+            if (!videoToDelete) return;
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('videos')
+                    .delete()
+                    .eq('id', videoToDelete)
+                    .eq('user_id', currentUser.id); // Extra safety check
+                
+                if (error) throw error;
+                
+                showMessage('Video deleted successfully', 'success');
+                closeDeleteModal();
+                loadUserVideos(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Error deleting video:', error);
+                showMessage('Error deleting video', 'error');
+                closeDeleteModal();
+            }
+        }
+        
+        function closeDeleteModal() {
+            videoToDelete = null;
+            document.getElementById('delete-modal').style.display = 'none';
+        }
+        
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = `message ${type}`;
+            msgDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
