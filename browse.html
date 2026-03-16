@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browse Videos - Knowledge Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .nav-links a {
+            margin-left: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .search-box button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .filters {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 5px 15px;
+            background: #ecf0f1;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        .thumbnail {
+            width: 100%;
+            height: 180px;
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+        }
+        
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .video-meta {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        
+        .video-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tag {
+            background: #ecf0f1;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #7f8c8d;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+        
+        .message {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Knowledge Hub</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="browse.html">Browse</a>
+            <a href="submit.html">Upload</a>
+            <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <div class="search-section">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search videos by title, tags, or institution..." value="">
+            <button onclick="searchVideos()">Search</button>
+        </div>
+        
+        <div class="filters" id="category-filters">
+            <button class="filter-btn active" onclick="filterByCategory('all')">All</button>
+            <button class="filter-btn" onclick="filterByCategory('Computer Science')">Computer Science</button>
+            <button class="filter-btn" onclick="filterByCategory('Mathematics')">Mathematics</button>
+            <button class="filter-btn" onclick="filterByCategory('Physics')">Physics</button>
+            <button class="filter-btn" onclick="filterByCategory('Biology')">Biology</button>
+            <button class="filter-btn" onclick="filterByCategory('Engineering')">Engineering</button>
+        </div>
+    </div>
+
+    <div id="videos-container">
+        <div class="loading">Loading videos...</div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = 'YOUR_PROJECT_URL';
+        const SUPABASE_KEY = 'YOUR_ANON_KEY';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let currentCategory = 'all';
+        let currentSearch = '';
+        
+        // Load videos when page loads
+        window.onload = function() {
+            loadVideos();
+        };
+        
+        async function loadVideos() {
+            const container = document.getElementById('videos-container');
+            
+            try {
+                let query = supabaseClient
+                    .from('videos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                // Apply category filter
+                if (currentCategory !== 'all') {
+                    query = query.eq('category', currentCategory);
+                }
+                
+                // Apply search if there is one
+                if (currentSearch) {
+                    query = query.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
+                }
+                
+                const { data: videos, error } = await query;
+                
+                if (error) throw error;
+                
+                if (!videos || videos.length === 0) {
+                    container.innerHTML = '<div class="message">No videos found</div>';
+                    return;
+                }
+                
+                // Display videos
+                let html = '<div class="videos-grid">';
+                
+                for (let video of videos) {
+                    // Get thumbnail URL
+                    const thumbnailUrl = `https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`;
+                    
+                    html += `
+                        <div class="video-card" onclick="viewVideo('${video.id}')">
+                            <div class="thumbnail">
+                                <img src="${thumbnailUrl}" alt="${video.title}" onerror="this.src='https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg'">
+                            </div>
+                            <div class="video-info">
+                                <div class="video-title">${escapeHtml(video.title)}</div>
+                                <div class="video-meta">
+                                    ${escapeHtml(video.category)} 
+                                    ${video.institution ? ' · ' + escapeHtml(video.institution) : ''}
+                                </div>
+                                <div class="video-tags">
+                                    ${video.tags ? video.tags.split(',').map(tag => 
+                                        `<span class="tag">${escapeHtml(tag.trim())}</span>`
+                                    ).join('') : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                container.innerHTML = '<div class="message">Error loading videos</div>';
+            }
+        }
+        
+        function searchVideos() {
+            currentSearch = document.getElementById('search-input').value;
+            loadVideos();
+        }
+        
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadVideos();
+        }
+        
+        function viewVideo(videoId) {
+            window.location.href = `video.html?id=${videoId}`;
+        }
+        
+        // Helper to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
