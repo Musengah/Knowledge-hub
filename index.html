@@ -30,6 +30,10 @@
     </style>
 </head>
 <body>
+    <div style="margin-top: 30px; padding: 15px; background: #e8f4f8; border-radius: 8px;">
+        <p id="db-status">⏳ Testing database connection...</p>
+        <p id="video-count"></p>
+    </div>
     <h1>Knowledge Hub</h1>
     <p>A simple library of educational videos</p>
     
@@ -42,5 +46,38 @@
     <footer style="margin-top: 60px; text-align: center; color: #7f8c8d; font-size: 0.9em;">
         <p>A simple project, built step by step.</p>
     </footer>
+    <!-- Add Supabase connection -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+    // Initialize Supabase client
+    const supabaseUrl = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+    const supabaseKey = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // Test the connection and show video count
+    async function testConnection() {
+        try {
+            const { data, error } = await supabase
+                .from('videos')
+                .select('*', { count: 'exact', head: true });
+            
+            if (error) throw error;
+            
+            // Update the page with connection status
+            document.getElementById('db-status').innerHTML = 
+                '✅ Database connected - Ready to add videos';
+            document.getElementById('video-count').innerHTML = 
+                `📊 Current library: 0 videos (waiting for first upload)`;
+        } catch (error) {
+            document.getElementById('db-status').innerHTML = 
+                '❌ Database connection issue - Check configuration';
+            console.error('Error:', error);
+        }
+    }
+    
+    // Run the test when page loads
+    testConnection();
+</script>
 </body>
 </html>
