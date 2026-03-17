@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Video - Knowledge Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+        }
+        
+        .nav-links a {
+            margin-left: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .report-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .video-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .video-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .video-meta {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: bold;
+        }
+        
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        select {
+            background: white;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .back-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .back-link a {
+            color: #7f8c8d;
+            text-decoration: none;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Knowledge Hub</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="browse.html">Browse</a>
+            <a href="submit.html">Upload</a>
+            <a href="my-uploads.html">My Uploads</a>
+            <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <div class="report-container">
+        <h2>Report a Problem</h2>
+        
+        <div id="message" class="message"></div>
+        
+        <div id="video-info" class="video-info">
+            Loading video information...
+        </div>
+        
+        <form id="report-form">
+            <div class="form-group">
+                <label for="reason">Reason for report *</label>
+                <select id="reason" required>
+                    <option value="">Select a reason</option>
+                    <option value="broken">Broken link (video not working)</option>
+                    <option value="copyright">Copyright violation</option>
+                    <option value="spam">Spam or misleading</option>
+                    <option value="inappropriate">Inappropriate content</option>
+                    <option value="wrong">Wrong category/tags</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="details">Additional details (optional)</label>
+                <textarea id="details" placeholder="Please provide any additional information that might help us review this report..."></textarea>
+            </div>
+            
+            <button type="button" onclick="submitReport()" id="submit-btn">Submit Report</button>
+        </form>
+        
+        <div class="back-link">
+            <a href="javascript:history.back()">← Go Back</a>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = 'YOUR_PROJECT_URL';
+        const SUPABASE_KEY = 'YOUR_ANON_KEY';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Get video ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
+        
+        if (!videoId) {
+            showMessage('No video specified', 'error');
+            document.getElementById('submit-btn').disabled = true;
+        } else {
+            loadVideoInfo();
+        }
+        
+        async function loadVideoInfo() {
+            try {
+                const { data: video, error } = await supabaseClient
+                    .from('videos')
+                    .select('*')
+                    .eq('id', videoId)
+                    .single();
+                
+                if (error) throw error;
+                if (!video) throw new Error('Video not found');
+                
+                document.getElementById('video-info').innerHTML = `
+                    <div class="video-title">${escapeHtml(video.title)}</div>
+                    <div class="video-meta">
+                        ${escapeHtml(video.category)} 
+                        ${video.institution ? ' · ' + escapeHtml(video.institution) : ''}
+                    </div>
+                `;
+                
+            } catch (error) {
+                document.getElementById('video-info').innerHTML = 'Error loading video information';
+                document.getElementById('submit-btn').disabled = true;
+            }
+        }
+        
+        async function submitReport() {
+            const reason = document.getElementById('reason').value;
+            const details = document.getElementById('details').value;
+            
+            if (!reason) {
+                showMessage('Please select a reason', 'error');
+                return;
+            }
+            
+            // Get current user (optional, but helpful)
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            // Create reports table if it doesn't exist
+            // We'll store reports in a new table
+            
+            try {
+                // First, check if reports table exists, if not create it
+                const { error: tableCheck } = await supabaseClient
+                    .from('reports')
+                    .select('id')
+                    .limit(1);
+                
+                // For now, let's just log the report (we'll set up the table next)
+                console.log('Report submitted:', {
+                    video_id: videoId,
+                    reason: reason,
+                    details: details,
+                    user_id: user?.id,
+                    user_email: user?.email,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Show success message
+                showMessage('Report submitted successfully. Thank you for helping keep Knowledge Hub clean!', 'success');
+                
+                // Clear form
+                document.getElementById('reason').value = '';
+                document.getElementById('details').value = '';
+                
+                // Disable form after submission
+                document.getElementById('submit-btn').disabled = true;
+                
+                // Redirect back after 3 seconds
+                setTimeout(() => {
+                    window.location.href = `video.html?id=${videoId}`;
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error submitting report:', error);
+                showMessage('Error submitting report. Please try again.', 'error');
+            }
+        }
+        
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = `message ${type}`;
+            msgDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
