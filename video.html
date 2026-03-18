@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Watch Video - Knowledge Hub</title>
     <style>
@@ -10,44 +11,45 @@
             padding: 20px;
             background: #f5f5f5;
         }
-        
+
         .header {
             background: white;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .header h1 {
             margin: 0;
             color: #2c3e50;
         }
-        
+
         .nav-links a {
             margin-left: 20px;
             color: #3498db;
             text-decoration: none;
         }
-        
+
         .video-container {
             background: white;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
-        
+
         .video-player {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 56.25%;
+            /* 16:9 aspect ratio */
             height: 0;
             overflow: hidden;
         }
-        
+
         .video-player iframe {
             position: absolute;
             top: 0;
@@ -56,32 +58,32 @@
             height: 100%;
             border: 0;
         }
-        
+
         .video-details {
             padding: 20px;
         }
-        
+
         .video-title {
             font-size: 24px;
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 10px;
         }
-        
+
         .video-meta {
             color: #7f8c8d;
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid #ecf0f1;
         }
-        
+
         .video-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 20px;
         }
-        
+
         .tag {
             background: #ecf0f1;
             padding: 5px 12px;
@@ -89,7 +91,7 @@
             font-size: 0.9em;
             color: #7f8c8d;
         }
-        
+
         .video-description {
             line-height: 1.6;
             color: #34495e;
@@ -97,26 +99,26 @@
             background: #f8f9fa;
             border-radius: 8px;
         }
-        
+
         .back-link {
             margin-bottom: 20px;
         }
-        
+
         .back-link a {
             color: #3498db;
             text-decoration: none;
         }
-        
+
         .back-link a:hover {
             text-decoration: underline;
         }
-        
+
         .loading {
             text-align: center;
             padding: 50px;
             color: #7f8c8d;
         }
-        
+
         .error {
             text-align: center;
             padding: 50px;
@@ -124,6 +126,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>Knowledge Hub</h1>
@@ -150,22 +153,22 @@
     </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
+
     <script>
         const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
+
         // Get video ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
-        
+
         if (!videoId) {
             document.getElementById('video-container').innerHTML = '<div class="error">No video specified</div>';
         } else {
             loadVideo(videoId);
         }
-        
+
         async function loadVideo(id) {
             try {
                 const { data: video, error } = await supabaseClient
@@ -173,13 +176,13 @@
                     .select('*')
                     .eq('id', id)
                     .single();
-                
+
                 if (error) throw error;
                 if (!video) throw new Error('Video not found');
-                
+
                 // Create embed URL
                 const embedUrl = `https://www.youtube.com/embed/${video.youtube_id}`;
-                
+
                 // Display video
                 const html = `
                     <div class="video-player">
@@ -193,26 +196,32 @@
                             · Submitted ${new Date(video.created_at).toLocaleDateString()}
                         </div>
                         <div class="video-tags">
-                            ${video.tags ? video.tags.split(',').map(tag => 
-                                `<span class="tag">${escapeHtml(tag.trim())}</span>`
-                            ).join('') : ''}
+                            ${video.tags ? video.tags.split(',').map(tag =>
+                                    `<span class="tag">${escapeHtml(tag.trim())}</span>`
+                                ).join('') : ''}
                         </div>
                         ${video.description ? `
                             <div class="video-description">
                                 ${escapeHtml(video.description).replace(/\n/g, '<br>')}
                             </div>
                         ` : ''}
+                        <!-- ADD THIS REPORT LINK -->
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ecf0f1; text-align: right;">
+                            <a href="report.html?id=${video.id}" style="color: #e74c3c; text-decoration: none; font-size: 0.9em;">
+                                ⚠️ Report this video
+                            </a>
+                        </div>
                     </div>
                 `;
-                
+
                 document.getElementById('video-container').innerHTML = html;
-                
+
             } catch (error) {
                 console.error('Error loading video:', error);
                 document.getElementById('video-container').innerHTML = '<div class="error">Error loading video</div>';
             }
         }
-        
+
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -221,4 +230,5 @@
         }
     </script>
 </body>
+
 </html>
