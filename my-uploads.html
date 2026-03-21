@@ -353,55 +353,91 @@
             }
         }
         
-        async function loadUserVideos() {
-            try {
-                const { data: videos, error } = await supabaseClient
-                    .from('videos')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                const container = document.getElementById('videos-list');
-                
-                if (!videos || videos.length === 0) {
-                    container.innerHTML = '<div style="text-align: center; padding: 50px; color: #7f8c8d;">You haven\'t uploaded any videos yet. <a href="submit.html">Upload your first video!</a></div>';
-                    return;
-                }
-                
-                let html = '';
-                for (let video of videos) {
-                    const thumbnailUrl = `https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`;
-                    
-                    html += `
-                        <div class="video-item">
-                            <div class="thumbnail">
-                                <img src="${thumbnailUrl}" alt="${video.title}" onerror="this.src='https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg'">
-                            </div>
-                            <div class="video-info">
-                                <div class="video-title">${escapeHtml(video.title)}</div>
-                                <div class="video-meta">
-                                    ${escapeHtml(video.category)} 
-                                    ${video.institution ? ' · ' + escapeHtml(video.institution) : ''}
-                                    · Uploaded ${new Date(video.created_at).toLocaleDateString()}
-                                </div>
-                            </div>
-                            <div class="video-actions">
-                                <button class="action-btn edit-btn" onclick="openEdit('${video.id}')">Edit</button>
-                                <button class="action-btn delete-btn" onclick="openDelete('${video.id}')">Delete</button>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                container.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error loading videos:', error);
-                showMessage('Error loading your videos', 'error');
-            }
+        async function loadUserUploads() {
+    try {
+        // Fetch user's videos
+        const { data: videos, error: videoError } = await supabaseClient
+            .from('videos')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        // Fetch user's documents
+        const { data: documents, error: docError } = await supabaseClient
+            .from('documents')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (videoError || docError) throw videoError || docError;
+        
+        const container = document.getElementById('videos-list');
+        
+        if ((!videos || videos.length === 0) && (!documents || documents.length === 0)) {
+            container.innerHTML = '<div style="text-align: center; padding: 50px; color: #7f8c8d;">You haven\'t uploaded anything yet. <a href="upload.html">Upload your first resource!</a></div>';
+            return;
         }
+        
+        let html = '';
+        
+        // Show videos
+        for (let video of videos || []) {
+            const thumbnailUrl = `https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`;
+            html += `
+                <div class="video-item">
+                    <div class="thumbnail">
+                        <img src="${thumbnailUrl}" alt="${escapeHtml(video.title)}">
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">📹 ${escapeHtml(video.title)}</div>
+                        <div class="video-meta">
+                            ${escapeHtml(video.category)} 
+                            ${video.institution ? ' · ' + escapeHtml(video.institution) : ''}
+                            · Uploaded ${new Date(video.created_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn edit-btn" onclick="openEdit('video', '${video.id}')">Edit</button>
+                        <button class="action-btn delete-btn" onclick="openDelete('video', '${video.id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Show documents
+        for (let doc of documents || []) {
+            let icon = '📄';
+            if (doc.file_type === 'pdf') icon = '📕';
+            if (doc.file_type === 'epub') icon = '📘';
+            
+            html += `
+                <div class="video-item">
+                    <div class="thumbnail" style="background: #3498db; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                        ${icon}
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${icon} ${escapeHtml(doc.title)}</div>
+                        <div class="video-meta">
+                            ${escapeHtml(doc.category)} 
+                            ${doc.institution ? ' · ' + escapeHtml(doc.institution) : ''}
+                            · ${formatFileSize(doc.file_size)}
+                            · Uploaded ${new Date(doc.created_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn edit-btn" onclick="openEdit('document', '${doc.id}')">Edit</button>
+                        <button class="action-btn delete-btn" onclick="openDelete('document', '${doc.id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading uploads:', error);
+    }
+}
         
         function openEdit(videoId) {
             // Find and populate form with video data
