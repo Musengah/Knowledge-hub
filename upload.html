@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload - Knowledge Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .nav-links a {
+            margin-left: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #7f8c8d;
+            background: none;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #f0f9ff;
+        }
+        
+        .upload-area.dragover {
+            background: #e1f0fa;
+            border-color: #2980b9;
+        }
+        
+        .file-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .file-name {
+            font-weight: bold;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+        
+        .file-size {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+            font-weight: bold;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .login-prompt a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .supported-formats {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Knowledge Hub</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="browse.html">Browse</a>
+            <a href="upload.html">Upload</a>
+            <a href="my-uploads.html">My Uploads</a>
+            <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="message" class="message"></div>
+        
+        <div id="login-prompt" class="login-prompt" style="display: none;">
+            <p>You need to be logged in to upload.</p>
+            <p><a href="login.html">Click here to log in</a></p>
+        </div>
+        
+        <div id="upload-form" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('video')">📹 Video</button>
+                <button class="tab" onclick="switchTab('document')">📄 Document</button>
+            </div>
+            
+            <!-- Video Form -->
+            <div id="video-form">
+                <div class="form-group">
+                    <label>YouTube URL *</label>
+                    <input type="url" id="video-url" placeholder="https://youtube.com/watch?v=...">
+                </div>
+            </div>
+            
+            <!-- Document Form -->
+            <div id="document-form" style="display: none;">
+                <div class="upload-area" id="drop-area" onclick="document.getElementById('file-input').click()">
+                    <p>📄 Drag & drop a file here or click to browse</p>
+                    <p class="supported-formats">Supported: PDF, EPUB (max 50MB)</p>
+                    <input type="file" id="file-input" accept=".pdf,.epub" style="display: none;" onchange="handleFileSelect(this.files[0])">
+                </div>
+                
+                <div id="file-info" class="file-info">
+                    <div class="file-name" id="file-name"></div>
+                    <div class="file-size" id="file-size"></div>
+                </div>
+            </div>
+            
+            <!-- Common Fields -->
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="title" placeholder="Title of the resource">
+            </div>
+            
+            <div class="form-group">
+                <label>Category *</label>
+                <select id="category">
+                    <option value="">Select a category</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Medicine">Medicine</option>
+                    <option value="History">History</option>
+                    <option value="Literature">Literature</option>
+                    <option value="Philosophy">Philosophy</option>
+                    <option value="Art & Design">Art & Design</option>
+                    <option value="Music">Music</option>
+                    <option value="Business">Business</option>
+                    <option value="Economics">Economics</option>
+                    <option value="Language Learning">Language Learning</option>
+                    <option value="Research Paper">Research Paper</option>
+                    <option value="Thesis">Thesis/Dissertation</option>
+                    <option value="Project Report">Project Report</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Institution (optional)</label>
+                <input type="text" id="institution" placeholder="e.g., MIT, Stanford, or leave blank">
+            </div>
+            
+            <div class="form-group">
+                <label>Tags * (comma separated)</label>
+                <input type="text" id="tags" placeholder="e.g., calculus, research, beginners">
+            </div>
+            
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <textarea id="description" rows="4" placeholder="Brief description of the resource"></textarea>
+            </div>
+            
+            <button onclick="submitUpload()" id="submit-btn">Upload</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let currentTab = 'video';
+        let selectedFile = null;
+        let currentUser = null;
+        
+        window.onload = function() {
+            checkAuth();
+        };
+        
+        async function checkAuth() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (user) {
+                currentUser = user;
+                document.getElementById('login-prompt').style.display = 'none';
+                document.getElementById('upload-form').style.display = 'block';
+            } else {
+                document.getElementById('login-prompt').style.display = 'block';
+                document.getElementById('upload-form').style.display = 'none';
+            }
+        }
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab styling
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide appropriate form
+            if (tab === 'video') {
+                document.getElementById('video-form').style.display = 'block';
+                document.getElementById('document-form').style.display = 'none';
+            } else {
+                document.getElementById('video-form').style.display = 'none';
+                document.getElementById('document-form').style.display = 'block';
+            }
+        }
+        
+        // Drag and drop handlers
+        const dropArea = document.getElementById('drop-area');
+        
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            handleFileSelect(file);
+        });
+        
+        function handleFileSelect(file) {
+            if (!file) return;
+            
+            // Check file type
+            const validTypes = ['application/pdf', 'application/epub+zip'];
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            
+            if (!validTypes.includes(file.type) && fileExt !== 'pdf' && fileExt !== 'epub') {
+                showMessage('Please select a PDF or EPUB file', 'error');
+                return;
+            }
+            
+            // Check file size (50MB limit)
+            if (file.size > 50 * 1024 * 1024) {
+                showMessage('File size must be less than 50MB', 'error');
+                return;
+            }
+            
+            selectedFile = file;
+            
+            // Display file info
+            document.getElementById('file-name').textContent = file.name;
+            document.getElementById('file-size').textContent = formatFileSize(file.size);
+            document.getElementById('file-info').style.display = 'block';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        async function submitUpload() {
+            const title = document.getElementById('title').value;
+            const category = document.getElementById('category').value;
+            const institution = document.getElementById('institution').value;
+            const tags = document.getElementById('tags').value;
+            const description = document.getElementById('description').value;
+            
+            // Basic validation
+            if (!title || !category || !tags) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (currentTab === 'video') {
+                await submitVideo(title, category, institution, tags, description);
+            } else {
+                await submitDocument(title, category, institution, tags, description);
+            }
+        }
+        
+        async function submitVideo(title, category, institution, tags, description) {
+            const url = document.getElementById('video-url').value;
+            
+            if (!url) {
+                showMessage('Please enter a YouTube URL', 'error');
+                return;
+            }
+            
+            // Extract YouTube ID
+            let videoId = '';
+            try {
+                const urlObj = new URL(url);
+                if (urlObj.hostname.includes('youtube.com')) {
+                    videoId = urlObj.searchParams.get('v');
+                } else if (urlObj.hostname.includes('youtu.be')) {
+                    videoId = urlObj.pathname.slice(1);
+                }
+            } catch (e) {
+                showMessage('Invalid YouTube URL', 'error');
+                return;
+            }
+            
+            if (!videoId) {
+                showMessage('Could not extract YouTube video ID', 'error');
+                return;
+            }
+            
+            // Check for duplicate
+            const { data: existing } = await supabaseClient
+                .from('videos')
+                .select('id')
+                .eq('youtube_id', videoId)
+                .maybeSingle();
+            
+            if (existing) {
+                showMessage('This video is already in the library', 'error');
+                return;
+            }
+            
+            // Insert video
+            const { error } = await supabaseClient
+                .from('videos')
+                .insert({
+                    youtube_url: url,
+                    youtube_id: videoId,
+                    title: title,
+                    category: category,
+                    institution: institution || null,
+                    tags: tags,
+                    description: description || null,
+                    user_id: currentUser.id,
+                    submitter_email: currentUser.email
+                });
+            
+            if (error) {
+                showMessage('Error: ' + error.message, 'error');
+            } else {
+                showMessage('Video uploaded successfully!', 'success');
+                clearForm();
+            }
+        }
+        
+        async function submitDocument(title, category, institution, tags, description) {
+            if (!selectedFile) {
+                showMessage('Please select a file to upload', 'error');
+                return;
+            }
+            
+            showMessage('Uploading document...', 'success');
+            document.getElementById('submit-btn').disabled = true;
+            
+            try {
+                // Get file info
+                const fileExt = selectedFile.name.split('.').pop().toLowerCase();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const filePath = `${currentUser.id}/${fileName}`;
+                
+                // Upload to Supabase Storage
+                const { data: fileData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('documents')
+                    .upload(filePath, selectedFile);
+                
+                if (uploadError) throw uploadError;
+                
+                // Get public URL
+                const { data: { publicUrl } } = supabaseClient
+                    .storage
+                    .from('documents')
+                    .getPublicUrl(filePath);
+                
+                // Save to documents table
+                const { error: dbError } = await supabaseClient
+                    .from('documents')
+                    .insert({
+                        title: title,
+                        category: category,
+                        institution: institution || null,
+                        tags: tags,
+                        description: description || null,
+                        file_name: selectedFile.name,
+                        file_url: publicUrl,
+                        file_size: selectedFile.size,
+                        file_type: fileExt,
+                        user_id: currentUser.id,
+                        submitter_email: currentUser.email
+                    });
+                
+                if (dbError) throw dbError;
+                
+                showMessage('Document uploaded successfully!', 'success');
+                clearForm();
+                selectedFile = null;
+                document.getElementById('file-info').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                showMessage('Error uploading document: ' + error.message, 'error');
+            } finally {
+                document.getElementById('submit-btn').disabled = false;
+            }
+        }
+        
+        function clearForm() {
+            document.getElementById('video-url').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('institution').value = '';
+            document.getElementById('tags').value = '';
+            document.getElementById('description').value = '';
+        }
+        
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = `message ${type}`;
+            msgDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
