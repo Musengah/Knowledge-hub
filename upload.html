@@ -2,43 +2,165 @@
 <html>
 <head>
     <title>Upload - Knowledge Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .nav {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+        .nav a {
+            margin-right: 15px;
+            color: blue;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .tab-btn {
+            padding: 8px 15px;
+            margin-right: 5px;
+            cursor: pointer;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .tab-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .login-prompt {
+            text-align: center;
+            padding: 30px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
-    <div id="message"></div>
-    
-    <div id="login-prompt">
-        <p>Please <a href="login.html">log in</a> to upload</p>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="browse.html">Browse</a>
+        <a href="upload.html">Upload</a>
+        <a href="my-uploads.html">My Uploads</a>
+        <a href="login.html">Login</a>
     </div>
     
-    <div id="upload-form" style="display: none;">
-        <button onclick="switchTab('video')">Video</button>
-        <button onclick="switchTab('document')">Document</button>
+    <div class="container">
+        <h2>Upload to Knowledge Hub</h2>
         
-        <!-- Video Form -->
-        <div id="video-form">
-            <input type="text" id="video-url" placeholder="YouTube URL">
+        <div id="message" class="message"></div>
+        
+        <div id="login-prompt" class="login-prompt">
+            <p>Please <a href="login.html">log in</a> to upload</p>
         </div>
         
-        <!-- Document Form -->
-        <div id="document-form" style="display: none;">
-            <input type="file" id="file-input" accept=".pdf,.epub">
+        <div id="upload-form" style="display: none;">
+            <div style="margin-bottom: 20px;">
+                <button class="tab-btn active" onclick="switchTab('video')">Video</button>
+                <button class="tab-btn" onclick="switchTab('document')">Document</button>
+            </div>
+            
+            <div id="video-form">
+                <div class="form-group">
+                    <label>YouTube URL *</label>
+                    <input type="text" id="video-url" placeholder="https://youtube.com/watch?v=...">
+                </div>
+            </div>
+            
+            <div id="document-form" style="display: none;">
+                <div class="form-group">
+                    <label>File *</label>
+                    <input type="file" id="file-input" accept=".pdf,.epub">
+                </div>
+                <div id="file-info" style="margin-top: 5px; font-size: 12px; color: #666;"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="title" placeholder="Video or document title">
+            </div>
+            
+            <div class="form-group">
+                <label>Category *</label>
+                <select id="category">
+                    <option value="">Select...</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Institution (optional)</label>
+                <input type="text" id="institution" placeholder="e.g., MIT, Stanford">
+            </div>
+            
+            <div class="form-group">
+                <label>Tags * (comma separated)</label>
+                <input type="text" id="tags" placeholder="e.g., calculus, beginners, lecture">
+            </div>
+            
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <textarea id="description" rows="3" placeholder="Brief description"></textarea>
+            </div>
+            
+            <button onclick="submitUpload()">Upload</button>
         </div>
-        
-        <!-- Common Fields -->
-        <input type="text" id="title" placeholder="Title">
-        <select id="category">
-            <option value="Computer Science">Computer Science</option>
-            <option value="Mathematics">Mathematics</option>
-            <option value="Physics">Physics</option>
-            <option value="Chemistry">Chemistry</option>
-            <option value="Biology">Biology</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Other">Other</option>
-        </select>
-        <input type="text" id="institution" placeholder="Institution (optional)">
-        <input type="text" id="tags" placeholder="Tags (comma separated)">
-        <textarea id="description" placeholder="Description (optional)"></textarea>
-        <button onclick="submitUpload()">Upload</button>
     </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -62,17 +184,27 @@
         
         function switchTab(tab) {
             currentTab = tab;
+            const videoBtn = document.querySelectorAll('.tab-btn')[0];
+            const docBtn = document.querySelectorAll('.tab-btn')[1];
+            
             if (tab === 'video') {
+                videoBtn.classList.add('active');
+                docBtn.classList.remove('active');
                 document.getElementById('video-form').style.display = 'block';
                 document.getElementById('document-form').style.display = 'none';
             } else {
+                docBtn.classList.add('active');
+                videoBtn.classList.remove('active');
                 document.getElementById('video-form').style.display = 'none';
                 document.getElementById('document-form').style.display = 'block';
             }
         }
         
         document.getElementById('file-input').addEventListener('change', function(e) {
-            selectedFile = e.target.files[0];
+            if (e.target.files[0]) {
+                selectedFile = e.target.files[0];
+                document.getElementById('file-info').innerHTML = `Selected: ${selectedFile.name} (${(selectedFile.size / 1024 / 1024).toFixed(1)} MB)`;
+            }
         });
         
         async function submitUpload() {
@@ -83,7 +215,7 @@
             const description = document.getElementById('description').value;
             
             if (!title || !category || !tags) {
-                alert('Please fill title, category, and tags');
+                showMessage('Please fill title, category, and tags', 'error');
                 return;
             }
             
@@ -97,7 +229,7 @@
         async function submitVideo(title, category, institution, tags, description) {
             const url = document.getElementById('video-url').value;
             if (!url) {
-                alert('Please enter YouTube URL');
+                showMessage('Please enter YouTube URL', 'error');
                 return;
             }
             
@@ -110,16 +242,15 @@
                     videoId = urlObj.pathname.slice(1);
                 }
             } catch(e) {
-                alert('Invalid YouTube URL');
+                showMessage('Invalid YouTube URL', 'error');
                 return;
             }
             
             if (!videoId) {
-                alert('Could not extract video ID');
+                showMessage('Could not extract video ID', 'error');
                 return;
             }
             
-            // Check duplicate
             const { data: existing } = await supabase
                 .from('videos')
                 .select('id')
@@ -127,7 +258,7 @@
                 .maybeSingle();
             
             if (existing) {
-                alert('This video already exists');
+                showMessage('This video already exists', 'error');
                 return;
             }
             
@@ -146,51 +277,50 @@
                 });
             
             if (error) {
-                alert('Error: ' + error.message);
+                showMessage('Error: ' + error.message, 'error');
             } else {
-                alert('Upload successful!');
+                showMessage('Video uploaded successfully!', 'success');
                 clearForm();
             }
         }
         
         async function submitDocument(title, category, institution, tags, description) {
             if (!selectedFile) {
-                alert('Please select a file');
+                showMessage('Please select a file', 'error');
                 return;
             }
             
             const fileExt = selectedFile.name.split('.').pop().toLowerCase();
             if (fileExt !== 'pdf' && fileExt !== 'epub') {
-                alert('Only PDF and EPUB files are supported');
+                showMessage('Only PDF and EPUB files are supported', 'error');
                 return;
             }
             
             if (selectedFile.size > 50 * 1024 * 1024) {
-                alert('File must be less than 50MB');
+                showMessage('File must be less than 50MB', 'error');
                 return;
             }
             
             const fileName = `${Date.now()}_${selectedFile.name}`;
             const filePath = `${currentUser.id}/${fileName}`;
             
-            // Upload file
+            showMessage('Uploading file...', 'success');
+            
             const { error: uploadError } = await supabase
                 .storage
                 .from('documents')
                 .upload(filePath, selectedFile);
             
             if (uploadError) {
-                alert('Upload error: ' + uploadError.message);
+                showMessage('Upload error: ' + uploadError.message, 'error');
                 return;
             }
             
-            // Get public URL
             const { data: { publicUrl } } = supabase
                 .storage
                 .from('documents')
                 .getPublicUrl(filePath);
             
-            // Save to database
             const { error: dbError } = await supabase
                 .from('documents')
                 .insert({
@@ -208,12 +338,13 @@
                 });
             
             if (dbError) {
-                alert('Database error: ' + dbError.message);
+                showMessage('Database error: ' + dbError.message, 'error');
             } else {
-                alert('Document uploaded successfully!');
+                showMessage('Document uploaded successfully!', 'success');
                 clearForm();
                 selectedFile = null;
                 document.getElementById('file-input').value = '';
+                document.getElementById('file-info').innerHTML = '';
             }
         }
         
@@ -224,6 +355,16 @@
             document.getElementById('institution').value = '';
             document.getElementById('tags').value = '';
             document.getElementById('description').value = '';
+        }
+        
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+            msgDiv.style.display = 'block';
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 4000);
         }
     </script>
 </body>
