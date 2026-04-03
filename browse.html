@@ -155,9 +155,10 @@
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Create client only once, no redeclaration
+        const _SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+        const _SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+        const _supabase = supabase.createClient(_SUPABASE_URL, _SUPABASE_KEY);
         
         let currentCategory = 'all';
         let currentSearch = '';
@@ -174,14 +175,14 @@
             try {
                 console.log('Fetching videos...');
                 // Fetch videos
-                let videoQuery = supabase
+                let videoQuery = _supabase
                     .from('videos')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
                 console.log('Fetching documents...');
                 // Fetch documents
-                let docQuery = supabase
+                let docQuery = _supabase
                     .from('documents')
                     .select('*')
                     .order('created_at', { ascending: false });
