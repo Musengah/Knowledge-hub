@@ -10,7 +10,6 @@
             padding: 20px;
             background: #f5f5f5;
         }
-        
         .header {
             background: white;
             padding: 20px;
@@ -21,25 +20,21 @@
             justify-content: space-between;
             align-items: center;
         }
-        
         .header h1 {
             margin: 0;
             color: #2c3e50;
         }
-        
         .nav-links a {
             margin-left: 20px;
             color: #3498db;
             text-decoration: none;
         }
-        
         .container {
             background: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
         .tab-bar {
             display: flex;
             gap: 10px;
@@ -47,7 +42,6 @@
             border-bottom: 2px solid #ecf0f1;
             padding-bottom: 10px;
         }
-        
         .tab {
             padding: 10px 20px;
             cursor: pointer;
@@ -57,12 +51,10 @@
             border: none;
             font-size: 16px;
         }
-        
         .tab.active {
             background: #3498db;
             color: white;
         }
-        
         .upload-area {
             border: 2px dashed #3498db;
             border-radius: 8px;
@@ -72,16 +64,9 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        
         .upload-area:hover {
             background: #f0f9ff;
         }
-        
-        .upload-area.dragover {
-            background: #e1f0fa;
-            border-color: #2980b9;
-        }
-        
         .file-info {
             background: #f8f9fa;
             padding: 15px;
@@ -89,30 +74,23 @@
             margin-bottom: 20px;
             display: none;
         }
-        
         .file-name {
             font-weight: bold;
-            color: #2c3e50;
             word-break: break-all;
         }
-        
         .file-size {
             color: #7f8c8d;
             font-size: 0.9em;
             margin-top: 5px;
         }
-        
         .form-group {
             margin-bottom: 20px;
         }
-        
         label {
             display: block;
             margin-bottom: 5px;
-            color: #34495e;
             font-weight: bold;
         }
-        
         input, select, textarea {
             width: 100%;
             padding: 10px;
@@ -121,7 +99,6 @@
             font-size: 16px;
             box-sizing: border-box;
         }
-        
         button {
             width: 100%;
             padding: 12px;
@@ -132,48 +109,41 @@
             font-size: 16px;
             cursor: pointer;
         }
-        
-        button:hover {
-            background: #2980b9;
-        }
-        
         button:disabled {
             background: #95a5a6;
             cursor: not-allowed;
         }
-        
         .message {
             padding: 10px;
             border-radius: 4px;
             margin-bottom: 20px;
             display: none;
         }
-        
         .success {
             background: #d4edda;
             color: #155724;
         }
-        
         .error {
             background: #f8d7da;
             color: #721c24;
         }
-        
         .login-prompt {
             text-align: center;
             padding: 40px;
         }
-        
         .login-prompt a {
             color: #3498db;
             text-decoration: none;
             font-weight: bold;
         }
-        
-        .supported-formats {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            margin-top: 5px;
+        .debug {
+            background: #f8f9fa;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+            display: none;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -203,7 +173,6 @@
                 <button class="tab" onclick="switchTab('document')">📄 Document (PDF/EPUB)</button>
             </div>
             
-            <!-- Video Upload Form -->
             <div id="video-upload">
                 <div class="form-group">
                     <label>YouTube URL *</label>
@@ -211,63 +180,57 @@
                 </div>
             </div>
             
-            <!-- Document Upload Form -->
             <div id="document-upload" style="display: none;">
                 <div class="upload-area" id="drop-area" onclick="document.getElementById('file-input').click()">
-                    <p>📄 Drag & drop a file here or click to browse</p>
-                    <p class="supported-formats">Supported: PDF, EPUB (max 50MB)</p>
+                    <p>📄 Click or drag a file here</p>
+                    <p style="color: #7f8c8d; font-size: 0.9em;">PDF or EPUB (max 50MB)</p>
                     <input type="file" id="file-input" accept=".pdf,.epub" style="display: none;" onchange="handleFileSelect(this.files[0])">
                 </div>
-                
                 <div id="file-info" class="file-info">
                     <div class="file-name" id="file-name"></div>
                     <div class="file-size" id="file-size"></div>
                 </div>
             </div>
             
-            <!-- Common Fields -->
             <div class="form-group">
                 <label>Title *</label>
-                <input type="text" id="title" placeholder="Title of the resource">
+                <input type="text" id="title">
             </div>
             
             <div class="form-group">
                 <label>Category *</label>
                 <select id="category">
-                    <option value="">Select a category</option>
+                    <option value="">Select</option>
                     <option value="Computer Science">Computer Science</option>
                     <option value="Mathematics">Mathematics</option>
                     <option value="Physics">Physics</option>
                     <option value="Chemistry">Chemistry</option>
                     <option value="Biology">Biology</option>
                     <option value="Engineering">Engineering</option>
-                    <option value="History">History</option>
-                    <option value="Literature">Literature</option>
-                    <option value="Language Learning">Language Learning</option>
                     <option value="Research Paper">Research Paper</option>
-                    <option value="Thesis">Thesis/Dissertation</option>
-                    <option value="Project Report">Project Report</option>
                     <option value="Other">Other</option>
                 </select>
             </div>
             
             <div class="form-group">
                 <label>Institution (optional)</label>
-                <input type="text" id="institution" placeholder="e.g., MIT, Stanford, or leave blank">
+                <input type="text" id="institution">
             </div>
             
             <div class="form-group">
                 <label>Tags * (comma separated)</label>
-                <input type="text" id="tags" placeholder="e.g., calculus, research, beginners">
+                <input type="text" id="tags" placeholder="e.g., calculus, research">
             </div>
             
             <div class="form-group">
                 <label>Description (optional)</label>
-                <textarea id="description" rows="4" placeholder="Brief description of the resource"></textarea>
+                <textarea id="description" rows="3"></textarea>
             </div>
             
             <button onclick="submitUpload()" id="submit-btn">Upload</button>
         </div>
+        
+        <div id="debug" class="debug"></div>
     </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -281,17 +244,24 @@
         let selectedFile = null;
         let currentUser = null;
         
+        function debugLog(msg) {
+            console.log(msg);
+            const debugDiv = document.getElementById('debug');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + msg + '<br>';
+        }
+        
         window.onload = function() {
             checkAuth();
         };
         
         async function checkAuth() {
             const { data: { user } } = await _supabase.auth.getUser();
-            
             if (user) {
                 currentUser = user;
                 document.getElementById('login-prompt').style.display = 'none';
                 document.getElementById('upload-form').style.display = 'block';
+                debugLog('Logged in as: ' + user.email);
             } else {
                 document.getElementById('login-prompt').style.display = 'block';
                 document.getElementById('upload-form').style.display = 'none';
@@ -300,14 +270,9 @@
         
         function switchTab(tab) {
             currentTab = tab;
-            
-            // Update tab styling
-            document.querySelectorAll('.tab').forEach(t => {
-                t.classList.remove('active');
-            });
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             
-            // Show/hide appropriate form
             if (tab === 'video') {
                 document.getElementById('video-upload').style.display = 'block';
                 document.getElementById('document-upload').style.display = 'none';
@@ -317,52 +282,43 @@
             }
         }
         
-        // Drag and drop handlers
         const dropArea = document.getElementById('drop-area');
         if (dropArea) {
             dropArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 dropArea.classList.add('dragover');
             });
-            
-            dropArea.addEventListener('dragleave', () => {
-                dropArea.classList.remove('dragover');
-            });
-            
+            dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
             dropArea.addEventListener('drop', (e) => {
                 e.preventDefault();
                 dropArea.classList.remove('dragover');
-                const file = e.dataTransfer.files[0];
-                handleFileSelect(file);
+                handleFileSelect(e.dataTransfer.files[0]);
             });
         }
         
         function handleFileSelect(file) {
             if (!file) return;
+            debugLog('File selected: ' + file.name + ' (' + file.size + ' bytes)');
             
-            // Check file type
             const fileExt = file.name.split('.').pop().toLowerCase();
             if (fileExt !== 'pdf' && fileExt !== 'epub') {
                 showMessage('Please select a PDF or EPUB file', 'error');
                 return;
             }
             
-            // Check file size (50MB limit)
             if (file.size > 50 * 1024 * 1024) {
                 showMessage('File size must be less than 50MB', 'error');
                 return;
             }
             
             selectedFile = file;
-            
-            // Display file info
             document.getElementById('file-name').textContent = file.name;
             document.getElementById('file-size').textContent = formatFileSize(file.size);
             document.getElementById('file-info').style.display = 'block';
         }
         
         function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' bytes';
+            if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
@@ -374,7 +330,6 @@
             const tags = document.getElementById('tags').value;
             const description = document.getElementById('description').value;
             
-            // Basic validation
             if (!title || !category || !tags) {
                 showMessage('Please fill in all required fields', 'error');
                 return;
@@ -389,13 +344,11 @@
         
         async function submitVideo(title, category, institution, tags, description) {
             const url = document.getElementById('youtube-url').value;
-            
             if (!url) {
                 showMessage('Please enter a YouTube URL', 'error');
                 return;
             }
             
-            // Extract YouTube ID
             let videoId = '';
             try {
                 const urlObj = new URL(url);
@@ -414,32 +367,17 @@
                 return;
             }
             
-            // Check for duplicate
-            const { data: existing } = await _supabase
-                .from('videos')
-                .select('id')
-                .eq('youtube_id', videoId)
-                .maybeSingle();
-            
+            const { data: existing } = await _supabase.from('videos').select('id').eq('youtube_id', videoId).maybeSingle();
             if (existing) {
                 showMessage('This video is already in the library', 'error');
                 return;
             }
             
-            // Insert video into videos table
-            const { error } = await _supabase
-                .from('videos')
-                .insert({
-                    youtube_url: url,
-                    youtube_id: videoId,
-                    title: title,
-                    category: category,
-                    institution: institution || null,
-                    tags: tags,
-                    description: description || null,
-                    user_id: currentUser.id,
-                    submitter_email: currentUser.email
-                });
+            const { error } = await _supabase.from('videos').insert({
+                youtube_url: url, youtube_id: videoId, title, category,
+                institution: institution || null, tags, description: description || null,
+                user_id: currentUser.id, submitter_email: currentUser.email
+            });
             
             if (error) {
                 showMessage('Error: ' + error.message, 'error');
@@ -457,52 +395,54 @@
             
             showMessage('Uploading document...', 'success');
             document.getElementById('submit-btn').disabled = true;
+            debugLog('Starting document upload...');
             
             try {
-                // Get file info
                 const fileExt = selectedFile.name.split('.').pop().toLowerCase();
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                 const filePath = `${currentUser.id}/${fileName}`;
+                debugLog('File path: ' + filePath);
                 
-                // Upload file to Supabase Storage (documents bucket)
-                const { error: uploadError } = await _supabase
+                debugLog('Uploading to storage bucket "documents"...');
+                const { data: uploadData, error: uploadError } = await _supabase
                     .storage
                     .from('documents')
                     .upload(filePath, selectedFile);
                 
-                if (uploadError) throw uploadError;
+                if (uploadError) {
+                    debugLog('Upload error: ' + JSON.stringify(uploadError));
+                    throw uploadError;
+                }
+                debugLog('Upload successful!');
                 
-                // Get public URL
-                const { data: { publicUrl } } = _supabase
-                    .storage
-                    .from('documents')
-                    .getPublicUrl(filePath);
+                const { data: { publicUrl } } = _supabase.storage.from('documents').getPublicUrl(filePath);
+                debugLog('Public URL: ' + publicUrl);
                 
-                // Save metadata to documents table
-                const { error: dbError } = await _supabase
-                    .from('documents')
-                    .insert({
-                        title: title,
-                        category: category,
-                        institution: institution || null,
-                        tags: tags,
-                        description: description || null,
-                        file_name: selectedFile.name,
-                        file_url: publicUrl,
-                        file_size: selectedFile.size,
-                        file_type: fileExt,
-                        user_id: currentUser.id,
-                        submitter_email: currentUser.email
-                    });
+                debugLog('Saving to documents table...');
+                const { error: dbError } = await _supabase.from('documents').insert({
+                    title, category, institution: institution || null, tags,
+                    description: description || null,
+                    file_name: selectedFile.name,
+                    file_url: publicUrl,
+                    file_size: selectedFile.size,
+                    file_type: fileExt,
+                    user_id: currentUser.id,
+                    submitter_email: currentUser.email
+                });
                 
-                if (dbError) throw dbError;
+                if (dbError) {
+                    debugLog('DB error: ' + JSON.stringify(dbError));
+                    throw dbError;
+                }
                 
+                debugLog('Document saved successfully!');
                 showMessage('Document uploaded successfully!', 'success');
                 clearForm();
                 selectedFile = null;
                 document.getElementById('file-info').style.display = 'none';
                 
             } catch (error) {
+                debugLog('ERROR: ' + error.message);
                 console.error('Upload error:', error);
                 showMessage('Error uploading document: ' + error.message, 'error');
             } finally {
@@ -524,7 +464,6 @@
             msgDiv.textContent = text;
             msgDiv.className = `message ${type}`;
             msgDiv.style.display = 'block';
-            
             setTimeout(() => {
                 msgDiv.style.display = 'none';
             }, 5000);
