@@ -7,61 +7,101 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             line-height: 1.6;
+            background: #f5f5f5;
         }
         .nav {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            padding: 10px;
-            background: #f0f0f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .nav a {
-            margin-right: 15px;
-            color: blue;
+            margin-right: 20px;
+            color: #3498db;
             text-decoration: none;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .back {
             margin-bottom: 15px;
         }
         .back a {
-            color: blue;
+            color: #3498db;
             text-decoration: none;
+        }
+        .video-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .video-header {
+            padding: 25px;
+            border-bottom: 1px solid #ecf0f1;
         }
         h1 {
             font-size: 24px;
-            margin: 15px 0;
+            margin: 0 0 10px 0;
+            color: #2c3e50;
         }
         .meta {
-            color: #666;
+            color: #7f8c8d;
             margin: 10px 0;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            font-size: 14px;
         }
         .tags {
-            background: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 4px;
+            background: #ecf0f1;
+            padding: 8px 15px;
+            border-radius: 20px;
             display: inline-block;
             margin: 10px 0;
+            font-size: 13px;
         }
         .description {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 15px 0;
-        }
-        iframe {
-            width: 100%;
-            height: 450px;
-            border: none;
+            background: #f8f9fa;
+            padding: 20px;
             border-radius: 8px;
+            margin: 20px 0 0 0;
+            color: #34495e;
+        }
+        .report-link {
+            margin-top: 20px;
+            text-align: right;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 20px;
+        }
+        .report-link a {
+            color: #e74c3c;
+            text-decoration: none;
+            font-size: 14px;
         }
         .message {
             text-align: center;
             padding: 50px;
-            color: #666;
+            color: #7f8c8d;
+        }
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
         }
     </style>
 </head>
@@ -78,54 +118,77 @@
         <div class="back">
             <a href="browse.html">← Back to Browse</a>
         </div>
-        <div id="content"></div>
+        <div id="content">
+            <div class="message">Loading video...</div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+        const _SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+        const _supabase = supabase.createClient(_SUPABASE_URL, _SUPABASE_KEY);
         
         const urlParams = new URLSearchParams(window.location.search);
         const videoId = urlParams.get('id');
         
         if (!videoId) {
-            document.getElementById('content').innerHTML = '<div class="message">No video specified</div>';
+            document.getElementById('content').innerHTML = '<div class="error">No video specified</div>';
         } else {
             loadVideo(videoId);
         }
         
         async function loadVideo(id) {
             try {
-                const { data: video, error } = await supabase
+                const { data: video, error } = await _supabase
                     .from('videos')
                     .select('*')
                     .eq('id', id)
                     .single();
                 
                 if (error) throw error;
+                if (!video) throw new Error('Video not found');
                 
-                const embedUrl = `https://www.youtube.com/embed/${video.youtube_id}`;
+                displayVideo(video);
                 
-                const html = `
-                    <iframe src="${embedUrl}" allowfullscreen></iframe>
-                    <h1>${escapeHtml(video.title)}</h1>
-                    <div class="meta">
-                        <strong>${escapeHtml(video.category)}</strong>
-                        ${video.institution ? ' · ' + escapeHtml(video.institution) : ' · Independent'}
-                        · Added ${new Date(video.created_at).toLocaleDateString()}
-                    </div>
-                    <div class="tags">🏷️ ${escapeHtml(video.tags)}</div>
-                    ${video.description ? `<div class="description">${escapeHtml(video.description).replace(/\n/g, '<br>')}</div>` : ''}
-                `;
-                
-                document.getElementById('content').innerHTML = html;
+                // Increment view count (optional)
+                await _supabase
+                    .from('videos')
+                    .update({ view_count: (video.view_count || 0) + 1 })
+                    .eq('id', id);
                 
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('content').innerHTML = '<div class="message">Error loading video</div>';
+                document.getElementById('content').innerHTML = '<div class="error">Error loading video: ' + error.message + '</div>';
             }
+        }
+        
+        function displayVideo(video) {
+            const embedUrl = `https://www.youtube.com/embed/${video.youtube_id}`;
+            
+            const html = `
+                <div class="video-card">
+                    <div class="video-container">
+                        <iframe src="${embedUrl}" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-header">
+                        <h1>📹 ${escapeHtml(video.title)}</h1>
+                        <div class="meta">
+                            <strong>${escapeHtml(video.category)}</strong>
+                            ${video.institution ? ' · ' + escapeHtml(video.institution) : ' · Independent'}
+                            · Added ${new Date(video.created_at).toLocaleDateString()}
+                            · ${video.view_count || 0} views
+                        </div>
+                        <div class="tags">🏷️ ${escapeHtml(video.tags)}</div>
+                        ${video.description ? `<div class="description">${escapeHtml(video.description).replace(/\n/g, '<br>')}</div>` : ''}
+                        <div class="report-link">
+                            <a href="report.html?id=${video.id}">⚠️ Report this video</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('content').innerHTML = html;
         }
         
         function escapeHtml(text) {
