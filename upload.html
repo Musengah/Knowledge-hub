@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload to Knowledge Hub</title>
+    <title>Upload - Knowledge Hub</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -53,6 +53,9 @@
             cursor: pointer;
             border-radius: 4px;
             color: #7f8c8d;
+            background: none;
+            border: none;
+            font-size: 16px;
         }
         
         .tab.active {
@@ -90,6 +93,7 @@
         .file-name {
             font-weight: bold;
             color: #2c3e50;
+            word-break: break-all;
         }
         
         .file-size {
@@ -165,6 +169,12 @@
             text-decoration: none;
             font-weight: bold;
         }
+        
+        .supported-formats {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -173,7 +183,7 @@
         <div class="nav-links">
             <a href="index.html">Home</a>
             <a href="browse.html">Browse</a>
-            <a href="submit-document.html">Upload</a>
+            <a href="upload.html">Upload</a>
             <a href="my-uploads.html">My Uploads</a>
             <a href="login.html">Login</a>
         </div>
@@ -189,8 +199,8 @@
         
         <div id="upload-form" style="display: none;">
             <div class="tab-bar">
-                <div class="tab active" onclick="switchTab('video')">YouTube Video</div>
-                <div class="tab" onclick="switchTab('document')">Document (PDF/EPUB)</div>
+                <button class="tab active" onclick="switchTab('video')">📹 YouTube Video</button>
+                <button class="tab" onclick="switchTab('document')">📄 Document (PDF/EPUB)</button>
             </div>
             
             <!-- Video Upload Form -->
@@ -204,8 +214,8 @@
             <!-- Document Upload Form -->
             <div id="document-upload" style="display: none;">
                 <div class="upload-area" id="drop-area" onclick="document.getElementById('file-input').click()">
-                    <p>Drag & drop a file here or click to browse</p>
-                    <p style="color: #7f8c8d; font-size: 0.9em;">Supported: PDF, EPUB (max 50MB)</p>
+                    <p>📄 Drag & drop a file here or click to browse</p>
+                    <p class="supported-formats">Supported: PDF, EPUB (max 50MB)</p>
                     <input type="file" id="file-input" accept=".pdf,.epub" style="display: none;" onchange="handleFileSelect(this.files[0])">
                 </div>
                 
@@ -263,9 +273,9 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <script>
-        const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+        const _SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+        const _supabase = supabase.createClient(_SUPABASE_URL, _SUPABASE_KEY);
         
         let currentTab = 'video';
         let selectedFile = null;
@@ -276,7 +286,7 @@
         };
         
         async function checkAuth() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            const { data: { user } } = await _supabase.auth.getUser();
             
             if (user) {
                 currentUser = user;
@@ -309,29 +319,30 @@
         
         // Drag and drop handlers
         const dropArea = document.getElementById('drop-area');
-        
-        dropArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropArea.classList.add('dragover');
-        });
-        
-        dropArea.addEventListener('dragleave', () => {
-            dropArea.classList.remove('dragover');
-        });
-        
-        dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            handleFileSelect(file);
-        });
+        if (dropArea) {
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            });
+            
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.classList.remove('dragover');
+            });
+            
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                handleFileSelect(file);
+            });
+        }
         
         function handleFileSelect(file) {
             if (!file) return;
             
             // Check file type
-            const validTypes = ['application/pdf', 'application/epub+zip'];
-            if (!validTypes.includes(file.type) && !file.name.endsWith('.pdf') && !file.name.endsWith('.epub')) {
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            if (fileExt !== 'pdf' && fileExt !== 'epub') {
                 showMessage('Please select a PDF or EPUB file', 'error');
                 return;
             }
@@ -404,7 +415,7 @@
             }
             
             // Check for duplicate
-            const { data: existing } = await supabaseClient
+            const { data: existing } = await _supabase
                 .from('videos')
                 .select('id')
                 .eq('youtube_id', videoId)
@@ -415,8 +426,8 @@
                 return;
             }
             
-            // Insert video
-            const { error } = await supabaseClient
+            // Insert video into videos table
+            const { error } = await _supabase
                 .from('videos')
                 .insert({
                     youtube_url: url,
@@ -426,7 +437,6 @@
                     institution: institution || null,
                     tags: tags,
                     description: description || null,
-                    content_type: 'video',
                     user_id: currentUser.id,
                     submitter_email: currentUser.email
                 });
@@ -449,13 +459,13 @@
             document.getElementById('submit-btn').disabled = true;
             
             try {
-                // Create a unique file name
-                const fileExt = selectedFile.name.split('.').pop();
+                // Get file info
+                const fileExt = selectedFile.name.split('.').pop().toLowerCase();
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                 const filePath = `${currentUser.id}/${fileName}`;
                 
-                // Upload file to Supabase Storage
-                const { data: fileData, error: uploadError } = await supabaseClient
+                // Upload file to Supabase Storage (documents bucket)
+                const { error: uploadError } = await _supabase
                     .storage
                     .from('documents')
                     .upload(filePath, selectedFile);
@@ -463,23 +473,24 @@
                 if (uploadError) throw uploadError;
                 
                 // Get public URL
-                const { data: { publicUrl } } = supabaseClient
+                const { data: { publicUrl } } = _supabase
                     .storage
                     .from('documents')
                     .getPublicUrl(filePath);
                 
-                // Save metadata to database
-                const { error: dbError } = await supabaseClient
-                    .from('videos')
+                // Save metadata to documents table
+                const { error: dbError } = await _supabase
+                    .from('documents')
                     .insert({
                         title: title,
                         category: category,
                         institution: institution || null,
                         tags: tags,
                         description: description || null,
-                        content_type: 'document',
+                        file_name: selectedFile.name,
                         file_url: publicUrl,
                         file_size: selectedFile.size,
+                        file_type: fileExt,
                         user_id: currentUser.id,
                         submitter_email: currentUser.email
                     });
