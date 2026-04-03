@@ -7,74 +7,107 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             line-height: 1.6;
+            background: #f5f5f5;
         }
         .nav {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            padding: 10px;
-            background: #f0f0f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .nav a {
-            margin-right: 15px;
-            color: blue;
+            margin-right: 20px;
+            color: #3498db;
             text-decoration: none;
         }
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .back {
             margin-bottom: 15px;
         }
         .back a {
-            color: blue;
+            color: #3498db;
             text-decoration: none;
         }
+        .document-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .document-header {
+            padding: 25px;
+            border-bottom: 1px solid #ecf0f1;
+        }
         h1 {
-            font-size: 24px;
-            margin: 15px 0;
+            font-size: 28px;
+            margin: 0 0 10px 0;
+            color: #2c3e50;
         }
         .meta {
-            color: #666;
+            color: #7f8c8d;
             margin: 10px 0;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            font-size: 14px;
         }
         .tags {
-            background: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 4px;
+            background: #ecf0f1;
+            padding: 8px 15px;
+            border-radius: 20px;
             display: inline-block;
             margin: 10px 0;
+            font-size: 13px;
         }
         .description {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 15px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #34495e;
         }
         .viewer {
-            margin: 20px 0;
-            text-align: center;
+            margin: 0;
+            background: #f8f9fa;
         }
         iframe {
             width: 100%;
-            height: 600px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            height: 700px;
+            border: none;
         }
-        .download {
+        .download-section {
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #ecf0f1;
+            background: #f8f9fa;
+        }
+        .download-btn {
             display: inline-block;
-            background: #28a745;
+            background: #27ae60;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 30px;
             text-decoration: none;
             border-radius: 4px;
-            margin-top: 15px;
+            font-weight: bold;
+        }
+        .download-btn:hover {
+            background: #219a52;
         }
         .message {
             text-align: center;
             padding: 50px;
-            color: #666;
+            color: #7f8c8d;
+        }
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+        }
+        .file-icon {
+            text-align: center;
+            padding: 40px;
+            font-size: 80px;
         }
     </style>
 </head>
@@ -91,74 +124,116 @@
         <div class="back">
             <a href="browse.html">← Back to Browse</a>
         </div>
-        <div id="content"></div>
+        <div id="content">
+            <div class="message">Loading document...</div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+        const _SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+        const _supabase = supabase.createClient(_SUPABASE_URL, _SUPABASE_KEY);
         
         const urlParams = new URLSearchParams(window.location.search);
         const docId = urlParams.get('id');
         
         if (!docId) {
-            document.getElementById('content').innerHTML = '<div class="message">No document specified</div>';
+            document.getElementById('content').innerHTML = '<div class="error">No document specified</div>';
         } else {
             loadDocument(docId);
         }
         
         async function loadDocument(id) {
             try {
-                const { data: doc, error } = await supabase
+                const { data: doc, error } = await _supabase
                     .from('documents')
                     .select('*')
                     .eq('id', id)
                     .single();
                 
                 if (error) throw error;
+                if (!doc) throw new Error('Document not found');
                 
-                let viewerHtml = '';
+                displayDocument(doc);
                 
-                if (doc.file_type === 'pdf') {
-                    viewerHtml = `
-                        <div class="viewer">
-                            <iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(doc.file_url)}&embedded=true"></iframe>
-                            <p style="margin-top: 10px; font-size: 12px; color: #666;">If viewer doesn't load, <a href="${doc.file_url}" target="_blank">click here</a> to open directly</p>
-                        </div>
-                    `;
-                } else if (doc.file_type === 'epub') {
-                    viewerHtml = `
-                        <div class="viewer">
-                            <p>📖 EPUB files cannot be previewed in browser.</p>
-                            <p>Download the file to read in your favorite EPUB reader.</p>
-                        </div>
-                    `;
-                }
-                
-                const html = `
-                    <h1>${escapeHtml(doc.title)}</h1>
-                    <div class="meta">
-                        <strong>${escapeHtml(doc.category)}</strong>
-                        ${doc.institution ? ' · ' + escapeHtml(doc.institution) : ' · Independent'}
-                        · ${(doc.file_size / 1024 / 1024).toFixed(1)} MB
-                        · Added ${new Date(doc.created_at).toLocaleDateString()}
-                    </div>
-                    <div class="tags">🏷️ ${escapeHtml(doc.tags)}</div>
-                    ${doc.description ? `<div class="description">${escapeHtml(doc.description).replace(/\n/g, '<br>')}</div>` : ''}
-                    ${viewerHtml}
-                    <div style="text-align: center;">
-                        <a href="${doc.file_url}" download class="download">📥 Download ${doc.file_type.toUpperCase()}</a>
-                    </div>
-                `;
-                
-                document.getElementById('content').innerHTML = html;
+                // Increment download count (optional)
+                await _supabase
+                    .from('documents')
+                    .update({ download_count: (doc.download_count || 0) + 1 })
+                    .eq('id', id);
                 
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('content').innerHTML = '<div class="message">Error loading document</div>';
+                document.getElementById('content').innerHTML = '<div class="error">Error loading document: ' + error.message + '</div>';
             }
+        }
+        
+        function displayDocument(doc) {
+            let viewerHtml = '';
+            let icon = '';
+            
+            if (doc.file_type === 'pdf') {
+                icon = '📕';
+                // Use Google Docs viewer for PDF preview
+                viewerHtml = `
+                    <div class="viewer">
+                        <iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(doc.file_url)}&embedded=true" 
+                                title="PDF Viewer">
+                        </iframe>
+                        <p style="text-align: center; font-size: 12px; color: #7f8c8d; padding: 10px;">
+                            If preview doesn't load, <a href="${doc.file_url}" target="_blank">click here</a> to open directly
+                        </p>
+                    </div>
+                `;
+            } else if (doc.file_type === 'epub') {
+                icon = '📘';
+                viewerHtml = `
+                    <div class="file-icon">
+                        ${icon}
+                        <p style="margin-top: 20px;">EPUB files cannot be previewed in the browser.</p>
+                        <p>Download the file to read in your favorite EPUB reader.</p>
+                    </div>
+                `;
+            } else {
+                icon = '📄';
+                viewerHtml = `
+                    <div class="file-icon">
+                        ${icon}
+                        <p>This file type cannot be previewed.</p>
+                    </div>
+                `;
+            }
+            
+            const html = `
+                <div class="document-card">
+                    <div class="document-header">
+                        <h1>${icon} ${escapeHtml(doc.title)}</h1>
+                        <div class="meta">
+                            <strong>${escapeHtml(doc.category)}</strong>
+                            ${doc.institution ? ' · ' + escapeHtml(doc.institution) : ' · Independent'}
+                            · ${formatFileSize(doc.file_size)}
+                            · Added ${new Date(doc.created_at).toLocaleDateString()}
+                            · ${doc.download_count || 0} downloads
+                        </div>
+                        <div class="tags">🏷️ ${escapeHtml(doc.tags)}</div>
+                        ${doc.description ? `<div class="description">${escapeHtml(doc.description).replace(/\n/g, '<br>')}</div>` : ''}
+                    </div>
+                    ${viewerHtml}
+                    <div class="download-section">
+                        <a href="${doc.file_url}" download class="download-btn">📥 Download ${doc.file_type.toUpperCase()}</a>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('content').innerHTML = html;
+        }
+        
+        function formatFileSize(bytes) {
+            if (!bytes) return 'Unknown';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
         
         function escapeHtml(text) {
