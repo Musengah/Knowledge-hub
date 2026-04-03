@@ -47,10 +47,12 @@
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .filters button {
             padding: 6px 15px;
-            margin-right: 8px;
             cursor: pointer;
             background: #ecf0f1;
             border: none;
@@ -113,6 +115,11 @@
             padding: 50px;
             color: #7f8c8d;
         }
+        .error-message {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -139,9 +146,12 @@
         <button onclick="filterCategory('Engineering')">Engineering</button>
         <button onclick="filterCategory('Research Paper')">Research</button>
         <button onclick="filterCategory('Thesis')">Thesis</button>
+        <button onclick="filterCategory('Other')">Other</button>
     </div>
     
-    <div id="results" class="grid"></div>
+    <div id="results" class="grid">
+        <div class="message">Loading content...</div>
+    </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
@@ -153,17 +163,24 @@
         let currentSearch = '';
         
         window.onload = function() {
+            console.log('Page loaded, fetching content...');
             loadContent();
         };
         
         async function loadContent() {
+            const container = document.getElementById('results');
+            container.innerHTML = '<div class="message">Loading content...</div>';
+            
             try {
-                // Fetch from both tables
+                console.log('Fetching videos...');
+                // Fetch videos
                 let videoQuery = supabase
                     .from('videos')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
+                console.log('Fetching documents...');
+                // Fetch documents
                 let docQuery = supabase
                     .from('documents')
                     .select('*')
@@ -171,12 +188,14 @@
                 
                 // Apply category filter
                 if (currentCategory !== 'all') {
+                    console.log('Filtering by category:', currentCategory);
                     videoQuery = videoQuery.eq('category', currentCategory);
                     docQuery = docQuery.eq('category', currentCategory);
                 }
                 
                 // Apply search
                 if (currentSearch) {
+                    console.log('Searching for:', currentSearch);
                     videoQuery = videoQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
                     docQuery = docQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
                 }
@@ -186,29 +205,40 @@
                     docQuery
                 ]);
                 
+                console.log('Videos result:', videosResult);
+                console.log('Documents result:', docsResult);
+                
+                if (videosResult.error) {
+                    console.error('Videos error:', videosResult.error);
+                }
+                if (docsResult.error) {
+                    console.error('Documents error:', docsResult.error);
+                }
+                
                 const videos = (videosResult.data || []).map(v => ({ ...v, type: 'video' }));
                 const documents = (docsResult.data || []).map(d => ({ ...d, type: 'document' }));
+                
+                console.log(`Found ${videos.length} videos and ${documents.length} documents`);
                 
                 const allItems = [...videos, ...documents];
                 allItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 
+                if (allItems.length === 0) {
+                    container.innerHTML = '<div class="message">No content found. Be the first to <a href="upload.html">upload something!</a></div>';
+                    return;
+                }
+                
                 displayResults(allItems);
                 
             } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('results').innerHTML = '<div class="message">Error loading content</div>';
+                console.error('Fatal error:', error);
+                container.innerHTML = `<div class="error-message">Error loading content: ${error.message}</div>`;
             }
         }
         
         function displayResults(items) {
             const container = document.getElementById('results');
-            
-            if (items.length === 0) {
-                container.innerHTML = '<div class="message">No content found</div>';
-                return;
-            }
-            
-            let html = '';
+            let html = '<div class="grid">';
             
             for (let item of items) {
                 let thumbnailHtml = '';
@@ -222,7 +252,7 @@
                 } else {
                     typeIcon = item.file_type === 'pdf' ? '📕' : '📘';
                     linkPage = 'document.html';
-                    thumbnailHtml = `<div class="thumbnail" style="background: #3498db; color: white;">${typeIcon}</div>`;
+                    thumbnailHtml = `<div class="thumbnail" style="background: #3498db; color: white; font-size: 48px;">${typeIcon}</div>`;
                 }
                 
                 html += `
@@ -230,21 +260,24 @@
                         ${thumbnailHtml}
                         <h3>${typeIcon} ${escapeHtml(item.title)}</h3>
                         <div class="meta">${escapeHtml(item.category)} ${item.institution ? '· ' + escapeHtml(item.institution) : ''}</div>
-                        <div class="tags">${escapeHtml(item.tags)}</div>
+                        <div class="tags">🏷️ ${escapeHtml(item.tags)}</div>
                     </div>
                 `;
             }
             
+            html += '</div>';
             container.innerHTML = html;
         }
         
         function searchContent() {
             currentSearch = document.getElementById('search').value;
+            console.log('Searching for:', currentSearch);
             loadContent();
         }
         
         function filterCategory(category) {
             currentCategory = category;
+            console.log('Filtering by category:', category);
             
             document.querySelectorAll('.filters button').forEach(btn => {
                 btn.classList.remove('active');
