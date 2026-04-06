@@ -1,202 +1,314 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Watch Video - Knowledge Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-            background: #f5f5f5;
-        }
-        .nav {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .nav a {
-            margin-right: 20px;
-            color: #3498db;
-            text-decoration: none;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .back {
-            margin-bottom: 15px;
-        }
-        .back a {
-            color: #3498db;
-            text-decoration: none;
-        }
-        .video-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
         .video-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin: 24px 0;
+        }
+        
+        .video-player {
             position: relative;
             padding-bottom: 56.25%;
             height: 0;
-            overflow: hidden;
             background: #000;
         }
-        .video-container iframe {
+        
+        .video-player iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border: none;
+            border: 0;
         }
-        .video-header {
-            padding: 25px;
-            border-bottom: 1px solid #ecf0f1;
+        
+        .video-details {
+            padding: 28px;
         }
-        h1 {
-            font-size: 24px;
-            margin: 0 0 10px 0;
-            color: #2c3e50;
+        
+        .video-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
         }
-        .meta {
-            color: #7f8c8d;
-            margin: 10px 0;
-            font-size: 14px;
+        
+        .video-meta-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 20px;
         }
-        .tags {
-            background: #ecf0f1;
-            padding: 8px 15px;
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .category-badge {
+            background: #2563eb;
+            color: white;
+            padding: 4px 12px;
             border-radius: 20px;
-            display: inline-block;
-            margin: 10px 0;
-            font-size: 13px;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
-        .description {
-            background: #f8f9fa;
+        
+        .institution-badge {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .tags-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .tag {
+            background: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+        
+        .description-section {
+            background: #f8fafc;
             padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0 0 0;
-            color: #34495e;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+            color: #334155;
         }
-        .report-link {
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
             margin-top: 20px;
-            text-align: right;
-            border-top: 1px solid #ecf0f1;
             padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
-        .report-link a {
-            color: #e74c3c;
+        
+        .report-link {
+            color: #ef4444;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .message {
-            text-align: center;
-            padding: 50px;
-            color: #7f8c8d;
+        
+        .report-link:hover {
+            text-decoration: underline;
         }
-        .error {
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #2563eb;
+            text-decoration: none;
+            margin: 16px 0;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .loading-state, .error-state {
             text-align: center;
-            padding: 50px;
-            color: #e74c3c;
+            padding: 60px;
+            background: white;
+            border-radius: 16px;
+            margin: 24px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .video-details {
+                padding: 20px;
+            }
+            .video-title {
+                font-size: 1.4rem;
+            }
+            .video-meta-bar {
+                gap: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="browse.html">Browse</a>
-        <a href="upload.html">Upload</a>
-        <a href="my-uploads.html">My Uploads</a>
-        <a href="login.html">Login</a>
-    </div>
-    
-    <div class="container">
-        <div class="back">
-            <a href="browse.html">← Back to Browse</a>
-        </div>
-        <div id="content">
-            <div class="message">Loading video...</div>
-        </div>
-    </div>
 
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-        const _SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-        const _SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
-        const _supabase = supabase.createClient(_SUPABASE_URL, _SUPABASE_KEY);
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoId = urlParams.get('id');
-        
-        if (!videoId) {
-            document.getElementById('content').innerHTML = '<div class="error">No video specified</div>';
+<header class="header">
+    <div class="header-content">
+        <a href="index.html" class="logo">📚 Knowledge Hub</a>
+        <button class="menu-btn" onclick="document.querySelector('.nav').classList.toggle('open')">☰</button>
+        <nav class="nav">
+            <a href="index.html">Home</a>
+            <a href="browse.html">Browse</a>
+            <a href="upload.html">Upload</a>
+            <a href="my-uploads.html">My Uploads</a>
+            <a href="login.html" id="auth-link">Login</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <a href="javascript:history.back()" class="back-link">← Back to Browse</a>
+    
+    <div id="video-container" class="video-container">
+        <div class="loading-state">
+            <div style="font-size: 2rem; margin-bottom: 16px;">🎬</div>
+            <p>Loading video...</p>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>Knowledge Hub — A free library of educational resources. Built for students, by everyone.</p>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+    const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Get video ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('id');
+    
+    // Auth link handler
+    async function updateAuthLink() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const authLink = document.getElementById('auth-link');
+        if (user) {
+            authLink.textContent = 'Logout';
+            authLink.href = '#';
+            authLink.onclick = async (e) => {
+                e.preventDefault();
+                await supabaseClient.auth.signOut();
+                window.location.href = 'index.html';
+            };
         } else {
-            loadVideo(videoId);
+            authLink.textContent = 'Login';
+            authLink.href = 'login.html';
+            authLink.onclick = null;
         }
-        
-        async function loadVideo(id) {
-            try {
-                const { data: video, error } = await _supabase
-                    .from('videos')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                if (error) throw error;
-                if (!video) throw new Error('Video not found');
-                
-                displayVideo(video);
-                
-                // Increment view count (optional)
-                await _supabase
-                    .from('videos')
-                    .update({ view_count: (video.view_count || 0) + 1 })
-                    .eq('id', id);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('content').innerHTML = '<div class="error">Error loading video: ' + error.message + '</div>';
-            }
-        }
-        
-        function displayVideo(video) {
-            const embedUrl = `https://www.youtube.com/embed/${video.youtube_id}`;
+    }
+    updateAuthLink();
+    
+    if (!videoId) {
+        document.getElementById('video-container').innerHTML = `
+            <div class="error-state">
+                <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
+                <h3>No video specified</h3>
+                <p>Please go back and select a video to watch.</p>
+                <a href="browse.html" style="color: #2563eb; margin-top: 16px; display: inline-block;">Browse videos →</a>
+            </div>
+        `;
+    } else {
+        loadVideo(videoId);
+    }
+    
+    async function loadVideo(id) {
+        try {
+            const { data: video, error } = await supabaseClient
+                .from('videos')
+                .select('*')
+                .eq('id', id)
+                .single();
             
+            if (error) throw error;
+            if (!video) throw new Error('Video not found');
+            
+            // Create embed URL
+            const embedUrl = `https://www.youtube.com/embed/${video.youtube_id}?rel=0&modestbranding=1`;
+            
+            // Format date
+            const uploadDate = new Date(video.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Build the page
             const html = `
-                <div class="video-card">
-                    <div class="video-container">
-                        <iframe src="${embedUrl}" allowfullscreen></iframe>
+                <div class="video-player">
+                    <iframe src="${embedUrl}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+                <div class="video-details">
+                    <h1 class="video-title">${escapeHtml(video.title)}</h1>
+                    
+                    <div class="video-meta-bar">
+                        <span class="category-badge">📂 ${escapeHtml(video.category)}</span>
+                        ${video.institution ? `<span class="institution-badge">🏫 ${escapeHtml(video.institution)}</span>` : ''}
+                        <span class="meta-item">📅 Uploaded: ${uploadDate}</span>
+                        <span class="meta-item">🎬 Video</span>
                     </div>
-                    <div class="video-header">
-                        <h1>📹 ${escapeHtml(video.title)}</h1>
-                        <div class="meta">
-                            <strong>${escapeHtml(video.category)}</strong>
-                            ${video.institution ? ' · ' + escapeHtml(video.institution) : ' · Independent'}
-                            · Added ${new Date(video.created_at).toLocaleDateString()}
-                            · ${video.view_count || 0} views
+                    
+                    <div class="tags-section">
+                        ${video.tags ? video.tags.split(',').map(tag => 
+                            `<span class="tag">#${escapeHtml(tag.trim())}</span>`
+                        ).join('') : '<span class="tag">No tags</span>'}
+                    </div>
+                    
+                    ${video.description ? `
+                        <div class="description-section">
+                            <strong>📝 Description</strong><br><br>
+                            ${escapeHtml(video.description).replace(/\n/g, '<br>')}
                         </div>
-                        <div class="tags">🏷️ ${escapeHtml(video.tags)}</div>
-                        ${video.description ? `<div class="description">${escapeHtml(video.description).replace(/\n/g, '<br>')}</div>` : ''}
-                        <div class="report-link">
-                            <a href="report.html?id=${video.id}">⚠️ Report this video</a>
-                        </div>
+                    ` : ''}
+                    
+                    <div class="action-buttons">
+                        <a href="https://www.youtube.com/watch?v=${video.youtube_id}" target="_blank" style="background: #ef4444; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
+                            ▶ Watch on YouTube
+                        </a>
+                        <a href="report.html?id=${video.id}" class="report-link">⚠️ Report this video</a>
                     </div>
                 </div>
             `;
             
-            document.getElementById('content').innerHTML = html;
+            document.getElementById('video-container').innerHTML = html;
+            
+        } catch (error) {
+            console.error('Error loading video:', error);
+            document.getElementById('video-container').innerHTML = `
+                <div class="error-state">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">❌</div>
+                    <h3>Video not found</h3>
+                    <p>The video you're looking for doesn't exist or has been removed.</p>
+                    <a href="browse.html" style="color: #2563eb; margin-top: 16px; display: inline-block;">Browse videos →</a>
+                </div>
+            `;
         }
-        
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-    </script>
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
 </body>
 </html>
