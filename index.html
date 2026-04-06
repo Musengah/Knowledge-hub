@@ -58,22 +58,27 @@
     <p>Knowledge Hub — A free library of educational resources. Built for students, by everyone.</p>
 </footer>
 
+<!-- Load Supabase only once, right before our script -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <script>
+    // Use a different variable name to avoid conflicts
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_KEY = 'YOUR_ANON_KEY';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    // Auth link
+    // Create client with a unique name
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Auth link handler
     async function updateAuthLink() {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         const authLink = document.getElementById('auth-link');
         if (user) {
             authLink.textContent = 'Logout';
             authLink.href = '#';
             authLink.onclick = async (e) => {
                 e.preventDefault();
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 window.location.href = 'index.html';
             };
         } else {
@@ -84,58 +89,103 @@
     }
     updateAuthLink();
     
-    // Load categories with counts
+    // Load categories with counts from videos AND documents
     async function loadCategories() {
-        const { data } = await supabase.from('videos').select('category');
+        // Get counts from videos
+        const { data: videos } = await supabaseClient.from('videos').select('category');
+        // Get counts from documents
+        const { data: documents } = await supabaseClient.from('documents').select('category');
+        
         const counts = {};
-        (data || []).forEach(v => { counts[v.category] = (counts[v.category] || 0) + 1; });
+        
+        // Count videos
+        (videos || []).forEach(v => { 
+            counts[v.category] = (counts[v.category] || 0) + 1; 
+        });
+        
+        // Count documents
+        (documents || []).forEach(d => { 
+            counts[d.category] = (counts[d.category] || 0) + 1; 
+        });
         
         const categories = ['Computer Science', 'Mathematics', 'Physics', 'Biology', 'Engineering', 'History', 'Literature'];
+        
+        const icons = {
+            'Computer Science': '💻',
+            'Mathematics': '📐',
+            'Physics': '⚡',
+            'Biology': '🧬',
+            'Engineering': '🔧',
+            'History': '📜',
+            'Literature': '📖'
+        };
+        
         const html = categories.map(cat => `
             <a href="browse.html?category=${encodeURIComponent(cat)}" class="category-card">
-                <div class="category-icon">${cat === 'Computer Science' ? '💻' : cat === 'Mathematics' ? '📐' : cat === 'Physics' ? '⚡' : cat === 'Biology' ? '🧬' : cat === 'Engineering' ? '🔧' : cat === 'History' ? '📜' : '📖'}</div>
+                <div class="category-icon">${icons[cat] || '📚'}</div>
                 <div class="category-name">${cat}</div>
                 <div class="category-count">${counts[cat] || 0} resources</div>
             </a>
         `).join('');
+        
         document.getElementById('categories-grid').innerHTML = html;
     }
     
     // Load recent items (videos + documents)
     async function loadRecent() {
-        const [videos, docs] = await Promise.all([
-            supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(6),
-            supabase.from('documents').select('*').order('created_at', { ascending: false }).limit(6)
-        ]);
-        
-        let items = [...(videos.data || []), ...(docs.data || [])];
-        items.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-        items = items.slice(0, 6);
-        
-        if (items.length === 0) {
-            document.getElementById('recent-grid').innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">No resources yet. Be the first to <a href="upload.html">upload something!</a></div>';
-            return;
-        }
-        
-        const html = items.map(item => {
-            const isVideo = item.youtube_id;
-            const link = isVideo ? `video.html?id=${item.id}` : `document.html?id=${item.id}`;
-            const badge = isVideo ? '📹 Video' : `📄 ${item.file_type?.toUpperCase() || 'DOC'}`;
-            const thumbnail = isVideo ? `https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg` : '';
+        try {
+            const [videosResult, docsResult] = await Promise.all([
+                supabaseClient.from('videos').select('*').order('created_at', { ascending: false }).limit(6),
+                supabaseClient.from('documents').select('*').order('created_at', { ascending: false }).limit(6)
+            ]);
             
-            return `
-                <a href="${link}" class="content-card" style="position: relative;">
-                    ${!isVideo ? `<div class="card-thumbnail" style="background: linear-gradient(135deg, #2563eb, #7c3aed); color: white;">📄</div>` : `<img class="card-thumbnail" src="${thumbnail}" alt="${escapeHtml(item.title)}">`}
-                    <div class="content-badge">${badge}</div>
-                    <div class="card-content">
-                        <div class="card-title">${escapeHtml(item.title)}</div>
-                        <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
-                        <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
-                    </div>
-                </a>
-            `;
-        }).join('');
-        document.getElementById('recent-grid').innerHTML = html;
+            let items = [...(videosResult.data || []), ...(docsResult.data || [])];
+            items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            items = items.slice(0, 6);
+            
+            if (items.length === 0) {
+                document.getElementById('recent-grid').innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">No resources yet. Be the first to <a href="upload.html">upload something!</a></div>';
+                return;
+            }
+            
+            const html = items.map(item => {
+                const isVideo = item.youtube_id !== undefined && item.youtube_id !== null;
+                const link = isVideo ? `video.html?id=${item.id}` : `document.html?id=${item.id}`;
+                const badge = isVideo ? '📹 Video' : `📄 ${(item.file_type || 'DOC').toUpperCase()}`;
+                const thumbnail = isVideo ? `https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg` : '';
+                
+                if (isVideo) {
+                    return `
+                        <a href="${link}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block;">
+                            <img class="card-thumbnail" src="${thumbnail}" alt="${escapeHtml(item.title)}" style="width: 100%; height: 160px; object-fit: cover;">
+                            <div class="content-badge">${badge}</div>
+                            <div class="card-content">
+                                <div class="card-title">${escapeHtml(item.title)}</div>
+                                <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
+                                <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
+                            </div>
+                        </a>
+                    `;
+                } else {
+                    return `
+                        <a href="${link}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block;">
+                            <div class="card-thumbnail" style="background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; display: flex; align-items: center; justify-content: center; font-size: 48px; height: 160px;">📄</div>
+                            <div class="content-badge">${badge}</div>
+                            <div class="card-content">
+                                <div class="card-title">${escapeHtml(item.title)}</div>
+                                <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
+                                <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
+                            </div>
+                        </a>
+                    `;
+                }
+            }).join('');
+            
+            document.getElementById('recent-grid').innerHTML = html;
+        } catch (error) {
+            console.error('Error loading recent items:', error);
+            document.getElementById('recent-grid').innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">Error loading resources. Please refresh.</div>';
+        }
     }
     
     function escapeHtml(text) {
@@ -150,6 +200,7 @@
         if (query) window.location.href = `browse.html?search=${encodeURIComponent(query)}`;
     }
     
+    // Load everything when page loads
     loadCategories();
     loadRecent();
 </script>
