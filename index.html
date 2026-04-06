@@ -1,105 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Knowledge Hub</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-top: 50px;
-        }
-        p {
-            color: #34495e;
-            text-align: center;
-        }
-        .coming-soon {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 30px;
-            margin-top: 40px;
-            text-align: center;
-            border: 1px solid #e9ecef;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Hub - Free Educational Library</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    <meta name="description" content="A free library where anyone can access and share educational videos and documents.">
 </head>
 <body>
-    <div style="position: absolute; top: 20px; right: 20px;">
-        <a href="index.html">Home</a>
-        <a href="browse.html">Browse</a>
-        <a href="upload.html">Upload</a>
-        <a href="my-uploads.html">My Uploads</a>
-        <a href="login.html">Login</a>
-    </div>
-    <div style="margin-top: 30px; padding: 15px; background: #e8f4f8; border-radius: 8px;">
-        <p id="db-status">⏳ Testing connection...</p>
-        <p id="video-count"></p>
-    </div>
-    <h1>Knowledge Hub</h1>
-    <p>A simple library of educational videos</p>
-    
-    <div class="coming-soon">
-        <h2>Coming Soon</h2>
-        <p>I'm building a place where anyone can share and find educational material related to a specific institute
-            or not. These will include documents and videos.</p>
-        <p>Check back later!</p>
-    </div>
-    
-    <footer style="margin-top: 60px; text-align: center; color: #7f8c8d; font-size: 0.9em;">
-        <p>A simple project, built step by step.</p>
-    </footer>
-    <!-- Add Supabase connection -->
-<!-- Load Supabase -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
+<header class="header">
+    <div class="header-content">
+        <a href="index.html" class="logo">📚 Knowledge Hub</a>
+        <button class="menu-btn" onclick="document.querySelector('.nav').classList.toggle('open')">☰</button>
+        <nav class="nav">
+            <a href="index.html" class="active">Home</a>
+            <a href="browse.html">Browse</a>
+            <a href="upload.html">Upload</a>
+            <a href="my-uploads.html">My Uploads</a>
+            <a href="login.html" id="auth-link">Login</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <div class="hero">
+        <h1>Share Knowledge. Learn Anything.</h1>
+        <p>A free, open library where students and lifelong learners share educational resources.</p>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search for videos, documents, or topics..." onkeypress="if(event.key==='Enter') search()">
+                <button onclick="search()">🔍 Search</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">
+        <h2>Browse by Category</h2>
+        <a href="browse.html" class="section-link">View all →</a>
+    </div>
+    <div class="grid" id="categories-grid">
+        <div class="category-card"><div class="category-icon">💻</div><div class="category-name">Computer Science</div><div class="category-count">Loading...</div></div>
+    </div>
+
+    <div class="section-title">
+        <h2>Recently Added</h2>
+        <a href="browse.html" class="section-link">Browse all →</a>
+    </div>
+    <div class="grid" id="recent-grid">
+        <div class="content-card" style="padding: 40px; text-align: center;">Loading resources...</div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>Knowledge Hub — A free library of educational resources. Built for students, by everyone.</p>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
-    // Replace these with your actual values from Supabase
-    const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_KEY = 'YOUR_ANON_KEY';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    console.log('URL:', SUPABASE_URL);
-    console.log('Key starts with:', SUPABASE_KEY.substring(0, 10) + '...');
-    
-    // Create the client - only once
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    // Test the connection
-    async function checkDatabase() {
-        try {
-            console.log('Testing connection...');
-            
-            const { data, error, count } = await supabaseClient
-                .from('videos')
-                .select('*', { count: 'exact', head: true });
-            
-            if (error) {
-                console.error('Database error:', error);
-                document.getElementById('db-status').innerHTML = 
-                    '❌ Database error: ' + error.message;
-                return;
-            }
-            
-            console.log('Connected! Count:', count);
-            document.getElementById('db-status').innerHTML = 
-                '✅ Database connected';
-            document.getElementById('video-count').innerHTML = 
-                `📚 Library has ${count || 0} videos`;
-            
-        } catch (err) {
-            console.error('Connection failed:', err);
-            document.getElementById('db-status').innerHTML = 
-                '❌ Failed: ' + err.message;
+    // Auth link
+    async function updateAuthLink() {
+        const { data: { user } } = await supabase.auth.getUser();
+        const authLink = document.getElementById('auth-link');
+        if (user) {
+            authLink.textContent = 'Logout';
+            authLink.href = '#';
+            authLink.onclick = async (e) => {
+                e.preventDefault();
+                await supabase.auth.signOut();
+                window.location.href = 'index.html';
+            };
+        } else {
+            authLink.textContent = 'Login';
+            authLink.href = 'login.html';
+            authLink.onclick = null;
         }
     }
+    updateAuthLink();
     
-    // Run it when page loads
-    checkDatabase();
+    // Load categories with counts
+    async function loadCategories() {
+        const { data } = await supabase.from('videos').select('category');
+        const counts = {};
+        (data || []).forEach(v => { counts[v.category] = (counts[v.category] || 0) + 1; });
+        
+        const categories = ['Computer Science', 'Mathematics', 'Physics', 'Biology', 'Engineering', 'History', 'Literature'];
+        const html = categories.map(cat => `
+            <a href="browse.html?category=${encodeURIComponent(cat)}" class="category-card">
+                <div class="category-icon">${cat === 'Computer Science' ? '💻' : cat === 'Mathematics' ? '📐' : cat === 'Physics' ? '⚡' : cat === 'Biology' ? '🧬' : cat === 'Engineering' ? '🔧' : cat === 'History' ? '📜' : '📖'}</div>
+                <div class="category-name">${cat}</div>
+                <div class="category-count">${counts[cat] || 0} resources</div>
+            </a>
+        `).join('');
+        document.getElementById('categories-grid').innerHTML = html;
+    }
+    
+    // Load recent items (videos + documents)
+    async function loadRecent() {
+        const [videos, docs] = await Promise.all([
+            supabase.from('videos').select('*').order('created_at', { ascending: false }).limit(6),
+            supabase.from('documents').select('*').order('created_at', { ascending: false }).limit(6)
+        ]);
+        
+        let items = [...(videos.data || []), ...(docs.data || [])];
+        items.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        items = items.slice(0, 6);
+        
+        if (items.length === 0) {
+            document.getElementById('recent-grid').innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">No resources yet. Be the first to <a href="upload.html">upload something!</a></div>';
+            return;
+        }
+        
+        const html = items.map(item => {
+            const isVideo = item.youtube_id;
+            const link = isVideo ? `video.html?id=${item.id}` : `document.html?id=${item.id}`;
+            const badge = isVideo ? '📹 Video' : `📄 ${item.file_type?.toUpperCase() || 'DOC'}`;
+            const thumbnail = isVideo ? `https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg` : '';
+            
+            return `
+                <a href="${link}" class="content-card" style="position: relative;">
+                    ${!isVideo ? `<div class="card-thumbnail" style="background: linear-gradient(135deg, #2563eb, #7c3aed); color: white;">📄</div>` : `<img class="card-thumbnail" src="${thumbnail}" alt="${escapeHtml(item.title)}">`}
+                    <div class="content-badge">${badge}</div>
+                    <div class="card-content">
+                        <div class="card-title">${escapeHtml(item.title)}</div>
+                        <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
+                        <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+        document.getElementById('recent-grid').innerHTML = html;
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function search() {
+        const query = document.getElementById('search-input').value;
+        if (query) window.location.href = `browse.html?search=${encodeURIComponent(query)}`;
+    }
+    
+    loadCategories();
+    loadRecent();
 </script>
 </body>
 </html>
