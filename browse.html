@@ -1,299 +1,292 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse - Knowledge Hub</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: #f5f5f5;
-        }
-        .nav {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .nav a {
-            margin-right: 20px;
-            color: #3498db;
-            text-decoration: none;
-        }
-        .search-bar {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .search-bar input {
-            padding: 10px;
-            width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .search-bar button {
-            padding: 10px 20px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .filters {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .filters button {
-            padding: 6px 15px;
-            cursor: pointer;
-            background: #ecf0f1;
-            border: none;
-            border-radius: 20px;
-        }
-        .filters button.active {
-            background: #3498db;
-            color: white;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-        .thumbnail {
-            width: 100%;
-            height: 150px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            overflow: hidden;
-        }
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        h3 {
-            margin: 10px 0;
-            font-size: 16px;
-            color: #2c3e50;
-        }
-        .meta {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin: 5px 0;
-        }
-        .tags {
-            font-size: 11px;
-            color: #95a5a6;
-        }
-        .message {
-            text-align: center;
-            padding: 50px;
-            color: #7f8c8d;
-        }
-        .error-message {
-            text-align: center;
-            padding: 50px;
-            color: #e74c3c;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
 </head>
 <body>
-    <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="browse.html">Browse</a>
-        <a href="upload.html">Upload</a>
-        <a href="my-uploads.html">My Uploads</a>
-        <a href="login.html">Login</a>
+
+<header class="header">
+    <div class="header-content">
+        <a href="index.html" class="logo">📚 Knowledge Hub</a>
+        <button class="menu-btn" onclick="document.querySelector('.nav').classList.toggle('open')">☰</button>
+        <nav class="nav">
+            <a href="index.html">Home</a>
+            <a href="browse.html" class="active">Browse</a>
+            <a href="upload.html">Upload</a>
+            <a href="my-uploads.html">My Uploads</a>
+            <a href="login.html" id="auth-link">Login</a>
+        </nav>
     </div>
-    
-    <div class="search-bar">
-        <input type="text" id="search" placeholder="Search by title, tags, or institution..." onkeyup="if(event.keyCode===13) searchContent()">
-        <button onclick="searchContent()">Search</button>
-    </div>
-    
-    <div class="filters">
-        <button class="active" onclick="filterCategory('all')">All</button>
-        <button onclick="filterCategory('Computer Science')">CS</button>
-        <button onclick="filterCategory('Mathematics')">Math</button>
-        <button onclick="filterCategory('Physics')">Physics</button>
-        <button onclick="filterCategory('Chemistry')">Chemistry</button>
-        <button onclick="filterCategory('Biology')">Biology</button>
-        <button onclick="filterCategory('Engineering')">Engineering</button>
-        <button onclick="filterCategory('Research Paper')">Research</button>
-        <button onclick="filterCategory('Thesis')">Thesis</button>
-        <button onclick="filterCategory('Other')">Other</button>
-    </div>
-    
-    <div id="results" class="grid">
-        <div class="message">Loading content...</div>
+</header>
+
+<main class="container">
+    <!-- Search and Filter Section -->
+    <div class="search-section" style="background: white; border-radius: var(--radius); padding: 24px; margin: 24px 0; box-shadow: var(--shadow);">
+        <div class="search-box" style="margin-bottom: 20px;">
+            <input type="text" id="search-input" placeholder="Search by title, tags, or institution..." value="" onkeypress="if(event.key==='Enter') search()">
+            <button onclick="search()">🔍 Search</button>
+        </div>
+        
+        <div class="filters" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="filter-btn active" data-category="all" onclick="filterByCategory('all')">All</button>
+            <button class="filter-btn" data-category="Computer Science" onclick="filterByCategory('Computer Science')">💻 Computer Science</button>
+            <button class="filter-btn" data-category="Mathematics" onclick="filterByCategory('Mathematics')">📐 Mathematics</button>
+            <button class="filter-btn" data-category="Physics" onclick="filterByCategory('Physics')">⚡ Physics</button>
+            <button class="filter-btn" data-category="Chemistry" onclick="filterByCategory('Chemistry')">🧪 Chemistry</button>
+            <button class="filter-btn" data-category="Biology" onclick="filterByCategory('Biology')">🧬 Biology</button>
+            <button class="filter-btn" data-category="Engineering" onclick="filterByCategory('Engineering')">🔧 Engineering</button>
+            <button class="filter-btn" data-category="Medicine" onclick="filterByCategory('Medicine')">💊 Medicine</button>
+            <button class="filter-btn" data-category="History" onclick="filterByCategory('History')">📜 History</button>
+            <button class="filter-btn" data-category="Literature" onclick="filterByCategory('Literature')">📖 Literature</button>
+            <button class="filter-btn" data-category="Philosophy" onclick="filterByCategory('Philosophy')">💭 Philosophy</button>
+            <button class="filter-btn" data-category="Art & Design" onclick="filterByCategory('Art & Design')">🎨 Art & Design</button>
+            <button class="filter-btn" data-category="Music" onclick="filterByCategory('Music')">🎵 Music</button>
+            <button class="filter-btn" data-category="Business" onclick="filterByCategory('Business')">💼 Business</button>
+            <button class="filter-btn" data-category="Economics" onclick="filterByCategory('Economics')">📊 Economics</button>
+            <button class="filter-btn" data-category="Language Learning" onclick="filterByCategory('Language Learning')">🗣️ Language</button>
+            <button class="filter-btn" data-category="Research Paper" onclick="filterByCategory('Research Paper')">📑 Research</button>
+            <button class="filter-btn" data-category="Thesis" onclick="filterByCategory('Thesis')">🎓 Thesis</button>
+            <button class="filter-btn" data-category="Project Report" onclick="filterByCategory('Project Report')">📋 Project</button>
+            <button class="filter-btn" data-category="Other" onclick="filterByCategory('Other')">📁 Other</button>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div id="results-count" style="color: var(--gray); font-size: 0.9rem;">Loading...</div>
+            <div style="display: flex; gap: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+                    <input type="radio" name="sort" value="recent" checked onchange="changeSort('recent')"> Most Recent
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+                    <input type="radio" name="sort" value="oldest" onchange="changeSort('oldest')"> Oldest First
+                </label>
+            </div>
+        </div>
     </div>
 
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-        // Create client only once, no redeclaration
-        const _SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-        const _SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
-        const _supabase = supabase.createClient(_SUPABASE_URL, _SUPABASE_KEY);
-        
-        let currentCategory = 'all';
-        let currentSearch = '';
-        
-        window.onload = function() {
-            console.log('Page loaded, fetching content...');
-            loadContent();
-        };
-        
-        async function loadContent() {
-            const container = document.getElementById('results');
-            container.innerHTML = '<div class="message">Loading content...</div>';
-            
-            try {
-                console.log('Fetching videos...');
-                // Fetch videos
-                let videoQuery = _supabase
-                    .from('videos')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                console.log('Fetching documents...');
-                // Fetch documents
-                let docQuery = _supabase
-                    .from('documents')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                // Apply category filter
-                if (currentCategory !== 'all') {
-                    console.log('Filtering by category:', currentCategory);
-                    videoQuery = videoQuery.eq('category', currentCategory);
-                    docQuery = docQuery.eq('category', currentCategory);
+    <!-- Results Grid -->
+    <div id="results-grid" class="grid">
+        <div class="content-card" style="padding: 40px; text-align: center;">Loading resources...</div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>Knowledge Hub — A free library of educational resources. Built for students, by everyone.</p>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+    const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // State variables
+    let currentCategory = 'all';
+    let currentSearch = '';
+    let currentSort = 'recent';
+    
+    // Get URL parameters on load
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('category')) {
+        currentCategory = urlParams.get('category');
+        // Highlight the active filter button
+        setTimeout(() => {
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-category') === currentCategory) {
+                    btn.classList.add('active');
                 }
-                
-                // Apply search
-                if (currentSearch) {
-                    console.log('Searching for:', currentSearch);
-                    videoQuery = videoQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
-                    docQuery = docQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
-                }
-                
-                const [videosResult, docsResult] = await Promise.all([
-                    videoQuery,
-                    docQuery
-                ]);
-                
-                console.log('Videos result:', videosResult);
-                console.log('Documents result:', docsResult);
-                
-                if (videosResult.error) {
-                    console.error('Videos error:', videosResult.error);
-                }
-                if (docsResult.error) {
-                    console.error('Documents error:', docsResult.error);
-                }
-                
-                const videos = (videosResult.data || []).map(v => ({ ...v, type: 'video' }));
-                const documents = (docsResult.data || []).map(d => ({ ...d, type: 'document' }));
-                
-                console.log(`Found ${videos.length} videos and ${documents.length} documents`);
-                
-                const allItems = [...videos, ...documents];
-                allItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                
-                if (allItems.length === 0) {
-                    container.innerHTML = '<div class="message">No content found. Be the first to <a href="upload.html">upload something!</a></div>';
-                    return;
-                }
-                
-                displayResults(allItems);
-                
-            } catch (error) {
-                console.error('Fatal error:', error);
-                container.innerHTML = `<div class="error-message">Error loading content: ${error.message}</div>`;
-            }
+            });
+        }, 100);
+    }
+    if (urlParams.has('search')) {
+        currentSearch = urlParams.get('search');
+        document.getElementById('search-input').value = currentSearch;
+    }
+    
+    // Auth link handler
+    async function updateAuthLink() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const authLink = document.getElementById('auth-link');
+        if (user) {
+            authLink.textContent = 'Logout';
+            authLink.href = '#';
+            authLink.onclick = async (e) => {
+                e.preventDefault();
+                await supabaseClient.auth.signOut();
+                window.location.href = 'index.html';
+            };
+        } else {
+            authLink.textContent = 'Login';
+            authLink.href = 'login.html';
+            authLink.onclick = null;
         }
+    }
+    updateAuthLink();
+    
+    function changeSort(sort) {
+        currentSort = sort;
+        loadContent();
+    }
+    
+    function search() {
+        currentSearch = document.getElementById('search-input').value;
+        // Update URL without reload
+        const newUrl = new URL(window.location);
+        if (currentSearch) {
+            newUrl.searchParams.set('search', currentSearch);
+        } else {
+            newUrl.searchParams.delete('search');
+        }
+        window.history.pushState({}, '', newUrl);
+        loadContent();
+    }
+    
+    function filterByCategory(category) {
+        currentCategory = category;
         
-        function displayResults(items) {
-            const container = document.getElementById('results');
-            let html = '<div class="grid">';
+        // Update active button styling
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-category') === category) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Update URL
+        const newUrl = new URL(window.location);
+        if (category !== 'all') {
+            newUrl.searchParams.set('category', category);
+        } else {
+            newUrl.searchParams.delete('category');
+        }
+        window.history.pushState({}, '', newUrl);
+        
+        loadContent();
+    }
+    
+    async function loadContent() {
+        const container = document.getElementById('results-grid');
+        
+        try {
+            // Build queries for videos and documents
+            let videoQuery = supabaseClient.from('videos').select('*');
+            let docQuery = supabaseClient.from('documents').select('*');
             
-            for (let item of items) {
-                let thumbnailHtml = '';
-                let typeIcon = '';
-                let linkPage = '';
-                
-                if (item.type === 'video') {
-                    typeIcon = '📹';
-                    linkPage = 'video.html';
-                    thumbnailHtml = `<div class="thumbnail"><img src="https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg" onerror="this.src='https://via.placeholder.com/300x150?text=No+Thumbnail'"></div>`;
-                } else {
-                    typeIcon = item.file_type === 'pdf' ? '📕' : '📘';
-                    linkPage = 'document.html';
-                    thumbnailHtml = `<div class="thumbnail" style="background: #3498db; color: white; font-size: 48px;">${typeIcon}</div>`;
-                }
-                
-                html += `
-                    <div class="card" onclick="window.location.href='${linkPage}?id=${item.id}'">
-                        ${thumbnailHtml}
-                        <h3>${typeIcon} ${escapeHtml(item.title)}</h3>
-                        <div class="meta">${escapeHtml(item.category)} ${item.institution ? '· ' + escapeHtml(item.institution) : ''}</div>
-                        <div class="tags">🏷️ ${escapeHtml(item.tags)}</div>
+            // Apply category filter
+            if (currentCategory !== 'all') {
+                videoQuery = videoQuery.eq('category', currentCategory);
+                docQuery = docQuery.eq('category', currentCategory);
+            }
+            
+            // Apply search filter
+            if (currentSearch) {
+                videoQuery = videoQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
+                docQuery = docQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
+            }
+            
+            // Apply sorting
+            const order = currentSort === 'recent' ? { ascending: false } : { ascending: true };
+            videoQuery = videoQuery.order('created_at', order);
+            docQuery = docQuery.order('created_at', order);
+            
+            // Execute both queries
+            const [videosResult, docsResult] = await Promise.all([videoQuery, docQuery]);
+            
+            const videos = videosResult.data || [];
+            const documents = docsResult.data || [];
+            
+            // Combine and sort
+            let allItems = [
+                ...videos.map(v => ({ ...v, type: 'video' })),
+                ...documents.map(d => ({ ...d, type: 'document' }))
+            ];
+            
+            // Sort combined list
+            allItems.sort((a, b) => {
+                const dateA = new Date(a.created_at);
+                const dateB = new Date(b.created_at);
+                return currentSort === 'recent' ? dateB - dateA : dateA - dateB;
+            });
+            
+            // Update results count
+            document.getElementById('results-count').innerHTML = `Found ${allItems.length} resource${allItems.length !== 1 ? 's' : ''}`;
+            
+            if (allItems.length === 0) {
+                container.innerHTML = `
+                    <div class="content-card" style="padding: 60px; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">🔍</div>
+                        <h3 style="margin-bottom: 8px;">No resources found</h3>
+                        <p style="color: var(--gray);">Try adjusting your search or category filter</p>
+                        <a href="upload.html" style="color: var(--primary); margin-top: 16px; display: inline-block;">Be the first to upload something →</a>
                     </div>
                 `;
+                return;
             }
             
-            html += '</div>';
+            // Render results
+            let html = '';
+            for (let item of allItems) {
+                if (item.type === 'video') {
+                    const thumbnailUrl = `https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg`;
+                    html += `
+                        <a href="video.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block;">
+                            <img class="card-thumbnail" src="${thumbnailUrl}" alt="${escapeHtml(item.title)}" style="width: 100%; height: 160px; object-fit: cover;">
+                            <div class="content-badge">📹 Video</div>
+                            <div class="card-content">
+                                <div class="card-title">${escapeHtml(item.title)}</div>
+                                <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
+                                <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
+                            </div>
+                        </a>
+                    `;
+                } else {
+                    let icon = '📄';
+                    let color = 'linear-gradient(135deg, #2563eb, #7c3aed)';
+                    if (item.file_type === 'pdf') {
+                        icon = '📕';
+                        color = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                    } else if (item.file_type === 'epub') {
+                        icon = '📘';
+                        color = 'linear-gradient(135deg, #10b981, #059669)';
+                    }
+                    
+                    html += `
+                        <a href="document.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block;">
+                            <div class="card-thumbnail" style="background: ${color}; color: white; display: flex; align-items: center; justify-content: center; font-size: 48px; height: 160px;">${icon}</div>
+                            <div class="content-badge">📄 ${item.file_type?.toUpperCase() || 'DOC'}</div>
+                            <div class="card-content">
+                                <div class="card-title">${escapeHtml(item.title)}</div>
+                                <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
+                                <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
+                            </div>
+                        </a>
+                    `;
+                }
+            }
+            
             container.innerHTML = html;
-        }
-        
-        function searchContent() {
-            currentSearch = document.getElementById('search').value;
-            console.log('Searching for:', currentSearch);
-            loadContent();
-        }
-        
-        function filterCategory(category) {
-            currentCategory = category;
-            console.log('Filtering by category:', category);
             
-            document.querySelectorAll('.filters button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            loadContent();
+        } catch (error) {
+            console.error('Error loading content:', error);
+            container.innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">Error loading resources. Please refresh the page.</div>';
         }
-        
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-    </script>
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Load content when page loads
+    loadContent();
+</script>
 </body>
 </html>
