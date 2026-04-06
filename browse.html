@@ -6,6 +6,115 @@
     <title>Browse - Knowledge Hub</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    <style>
+        /* Additional styles for browse page */
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #e2e8f0;
+        }
+        
+        .filter-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .type-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+        
+        .type-badge.video {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .type-badge.document {
+            background: #10b981;
+            color: white;
+        }
+        
+        .card-thumbnail {
+            position: relative;
+        }
+        
+        .sort-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            font-size: 0.85rem;
+        }
+        
+        .sort-option.active {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: white;
+            border-radius: 12px;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+        
+        .search-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .results-header {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -24,17 +133,17 @@
 </header>
 
 <main class="container">
-    <!-- Search and Filter Section -->
-    <div class="search-section" style="background: white; border-radius: var(--radius); padding: 24px; margin: 24px 0; box-shadow: var(--shadow);">
-        <div class="search-box" style="margin-bottom: 20px;">
-            <input type="text" id="search-input" placeholder="Search by title, tags, or institution..." value="" onkeypress="if(event.key==='Enter') search()">
-            <button onclick="search()">🔍 Search</button>
+    <!-- Search Section -->
+    <div class="search-section">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <input type="text" id="search-input" placeholder="Search by title, tags, or institution..." value="" onkeypress="if(event.key==='Enter') search()" style="flex: 1; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 40px; font-size: 1rem;">
+            <button onclick="search()" style="padding: 12px 28px; background: #2563eb; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 600;">🔍 Search</button>
         </div>
         
-        <div class="filters" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="filter-group">
             <button class="filter-btn active" data-category="all" onclick="filterByCategory('all')">All</button>
-            <button class="filter-btn" data-category="Computer Science" onclick="filterByCategory('Computer Science')">💻 Computer Science</button>
-            <button class="filter-btn" data-category="Mathematics" onclick="filterByCategory('Mathematics')">📐 Mathematics</button>
+            <button class="filter-btn" data-category="Computer Science" onclick="filterByCategory('Computer Science')">💻 CS</button>
+            <button class="filter-btn" data-category="Mathematics" onclick="filterByCategory('Mathematics')">📐 Math</button>
             <button class="filter-btn" data-category="Physics" onclick="filterByCategory('Physics')">⚡ Physics</button>
             <button class="filter-btn" data-category="Chemistry" onclick="filterByCategory('Chemistry')">🧪 Chemistry</button>
             <button class="filter-btn" data-category="Biology" onclick="filterByCategory('Biology')">🧬 Biology</button>
@@ -42,33 +151,23 @@
             <button class="filter-btn" data-category="Medicine" onclick="filterByCategory('Medicine')">💊 Medicine</button>
             <button class="filter-btn" data-category="History" onclick="filterByCategory('History')">📜 History</button>
             <button class="filter-btn" data-category="Literature" onclick="filterByCategory('Literature')">📖 Literature</button>
-            <button class="filter-btn" data-category="Philosophy" onclick="filterByCategory('Philosophy')">💭 Philosophy</button>
-            <button class="filter-btn" data-category="Art & Design" onclick="filterByCategory('Art & Design')">🎨 Art & Design</button>
-            <button class="filter-btn" data-category="Music" onclick="filterByCategory('Music')">🎵 Music</button>
-            <button class="filter-btn" data-category="Business" onclick="filterByCategory('Business')">💼 Business</button>
-            <button class="filter-btn" data-category="Economics" onclick="filterByCategory('Economics')">📊 Economics</button>
-            <button class="filter-btn" data-category="Language Learning" onclick="filterByCategory('Language Learning')">🗣️ Language</button>
             <button class="filter-btn" data-category="Research Paper" onclick="filterByCategory('Research Paper')">📑 Research</button>
             <button class="filter-btn" data-category="Thesis" onclick="filterByCategory('Thesis')">🎓 Thesis</button>
-            <button class="filter-btn" data-category="Project Report" onclick="filterByCategory('Project Report')">📋 Project</button>
             <button class="filter-btn" data-category="Other" onclick="filterByCategory('Other')">📁 Other</button>
         </div>
-        
-        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div id="results-count" style="color: var(--gray); font-size: 0.9rem;">Loading...</div>
-            <div style="display: flex; gap: 10px;">
-                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
-                    <input type="radio" name="sort" value="recent" checked onchange="changeSort('recent')"> Most Recent
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
-                    <input type="radio" name="sort" value="oldest" onchange="changeSort('oldest')"> Oldest First
-                </label>
-            </div>
+    </div>
+
+    <!-- Results Header -->
+    <div class="results-header">
+        <div id="results-count" style="color: #64748b; font-size: 0.9rem;">Loading...</div>
+        <div style="display: flex; gap: 10px;">
+            <div class="sort-option" data-sort="recent" onclick="changeSort('recent')">📅 Most Recent</div>
+            <div class="sort-option" data-sort="oldest" onclick="changeSort('oldest')">📅 Oldest First</div>
         </div>
     </div>
 
     <!-- Results Grid -->
-    <div id="results-grid" class="grid">
+    <div id="results-grid" class="grid" style="margin-top: 24px;">
         <div class="content-card" style="padding: 40px; text-align: center;">Loading resources...</div>
     </div>
 </main>
@@ -88,21 +187,12 @@
     let currentCategory = 'all';
     let currentSearch = '';
     let currentSort = 'recent';
+    let isLoading = false;
     
     // Get URL parameters on load
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('category')) {
         currentCategory = urlParams.get('category');
-        // Highlight the active filter button
-        setTimeout(() => {
-            const btns = document.querySelectorAll('.filter-btn');
-            btns.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-category') === currentCategory) {
-                    btn.classList.add('active');
-                }
-            });
-        }, 100);
     }
     if (urlParams.has('search')) {
         currentSearch = urlParams.get('search');
@@ -131,11 +221,21 @@
     
     function changeSort(sort) {
         currentSort = sort;
+        
+        // Update UI
+        document.querySelectorAll('.sort-option').forEach(opt => {
+            opt.classList.remove('active');
+            if (opt.getAttribute('data-sort') === sort) {
+                opt.classList.add('active');
+            }
+        });
+        
         loadContent();
     }
     
     function search() {
         currentSearch = document.getElementById('search-input').value;
+        
         // Update URL without reload
         const newUrl = new URL(window.location);
         if (currentSearch) {
@@ -144,6 +244,7 @@
             newUrl.searchParams.delete('search');
         }
         window.history.pushState({}, '', newUrl);
+        
         loadContent();
     }
     
@@ -171,7 +272,11 @@
     }
     
     async function loadContent() {
+        if (isLoading) return;
+        isLoading = true;
+        
         const container = document.getElementById('results-grid');
+        container.innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">⏳ Loading resources...</div>';
         
         try {
             // Build queries for videos and documents
@@ -185,9 +290,10 @@
             }
             
             // Apply search filter
-            if (currentSearch) {
-                videoQuery = videoQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
-                docQuery = docQuery.or(`title.ilike.%${currentSearch}%,tags.ilike.%${currentSearch}%,institution.ilike.%${currentSearch}%`);
+            if (currentSearch && currentSearch.trim() !== '') {
+                const searchTerm = currentSearch.trim();
+                videoQuery = videoQuery.or(`title.ilike.%${searchTerm}%,tags.ilike.%${searchTerm}%,institution.ilike.%${searchTerm}%`);
+                docQuery = docQuery.or(`title.ilike.%${searchTerm}%,tags.ilike.%${searchTerm}%,institution.ilike.%${searchTerm}%`);
             }
             
             // Apply sorting
@@ -215,17 +321,20 @@
             });
             
             // Update results count
-            document.getElementById('results-count').innerHTML = `Found ${allItems.length} resource${allItems.length !== 1 ? 's' : ''}`;
+            const videoCount = videos.length;
+            const docCount = documents.length;
+            document.getElementById('results-count').innerHTML = `📹 ${videoCount} video${videoCount !== 1 ? 's' : ''} & 📄 ${docCount} document${docCount !== 1 ? 's' : ''} · Total: ${allItems.length}`;
             
             if (allItems.length === 0) {
                 container.innerHTML = `
-                    <div class="content-card" style="padding: 60px; text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 16px;">🔍</div>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
                         <h3 style="margin-bottom: 8px;">No resources found</h3>
-                        <p style="color: var(--gray);">Try adjusting your search or category filter</p>
-                        <a href="upload.html" style="color: var(--primary); margin-top: 16px; display: inline-block;">Be the first to upload something →</a>
+                        <p style="color: #64748b;">Try adjusting your search or category filter</p>
+                        <a href="upload.html" style="color: #2563eb; margin-top: 16px; display: inline-block;">➕ Be the first to upload something</a>
                     </div>
                 `;
+                isLoading = false;
                 return;
             }
             
@@ -235,35 +344,56 @@
                 if (item.type === 'video') {
                     const thumbnailUrl = `https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg`;
                     html += `
-                        <a href="video.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block;">
-                            <img class="card-thumbnail" src="${thumbnailUrl}" alt="${escapeHtml(item.title)}" style="width: 100%; height: 160px; object-fit: cover;">
-                            <div class="content-badge">📹 Video</div>
+                        <a href="video.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block; overflow: hidden;">
+                            <div class="card-thumbnail" style="position: relative;">
+                                <img src="${thumbnailUrl}" alt="${escapeHtml(item.title)}" style="width: 100%; height: 160px; object-fit: cover;">
+                                <div class="type-badge video">🎬 VIDEO</div>
+                            </div>
                             <div class="card-content">
                                 <div class="card-title">${escapeHtml(item.title)}</div>
-                                <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
+                                <div class="card-meta">📂 ${escapeHtml(item.category)} ${item.institution ? `· 🏫 ${escapeHtml(item.institution)}` : ''}</div>
                                 <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
+                                <div style="margin-top: 8px; font-size: 0.7rem; color: #94a3b8;">📅 ${new Date(item.created_at).toLocaleDateString()}</div>
                             </div>
                         </a>
                     `;
                 } else {
                     let icon = '📄';
-                    let color = 'linear-gradient(135deg, #2563eb, #7c3aed)';
+                    let typeLabel = 'DOCUMENT';
+                    let color = '#2563eb';
+                    
                     if (item.file_type === 'pdf') {
                         icon = '📕';
-                        color = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                        typeLabel = 'PDF';
+                        color = '#ef4444';
                     } else if (item.file_type === 'epub') {
                         icon = '📘';
-                        color = 'linear-gradient(135deg, #10b981, #059669)';
+                        typeLabel = 'EPUB';
+                        color = '#10b981';
+                    }
+                    
+                    // Format file size
+                    let fileSize = '';
+                    if (item.file_size) {
+                        if (item.file_size < 1024) fileSize = item.file_size + ' B';
+                        else if (item.file_size < 1024 * 1024) fileSize = (item.file_size / 1024).toFixed(1) + ' KB';
+                        else fileSize = (item.file_size / (1024 * 1024)).toFixed(1) + ' MB';
                     }
                     
                     html += `
-                        <a href="document.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block;">
-                            <div class="card-thumbnail" style="background: ${color}; color: white; display: flex; align-items: center; justify-content: center; font-size: 48px; height: 160px;">${icon}</div>
-                            <div class="content-badge">📄 ${item.file_type?.toUpperCase() || 'DOC'}</div>
+                        <a href="document.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block; overflow: hidden;">
+                            <div class="card-thumbnail" style="background: ${color}; color: white; display: flex; align-items: center; justify-content: center; font-size: 48px; height: 160px; position: relative;">
+                                ${icon}
+                                <div class="type-badge document" style="background: ${color};">📄 ${typeLabel}</div>
+                            </div>
                             <div class="card-content">
                                 <div class="card-title">${escapeHtml(item.title)}</div>
-                                <div class="card-meta">${escapeHtml(item.category)} ${item.institution ? `· ${escapeHtml(item.institution)}` : ''}</div>
+                                <div class="card-meta">📂 ${escapeHtml(item.category)} ${item.institution ? `· 🏫 ${escapeHtml(item.institution)}` : ''}</div>
                                 <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
+                                <div style="margin-top: 8px; display: flex; gap: 12px; font-size: 0.7rem; color: #94a3b8;">
+                                    <span>📅 ${new Date(item.created_at).toLocaleDateString()}</span>
+                                    ${fileSize ? `<span>💾 ${fileSize}</span>` : ''}
+                                </div>
                             </div>
                         </a>
                     `;
@@ -274,7 +404,15 @@
             
         } catch (error) {
             console.error('Error loading content:', error);
-            container.innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">Error loading resources. Please refresh the page.</div>';
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <h3 style="margin-bottom: 8px;">Error loading resources</h3>
+                    <p style="color: #64748b;">Please refresh the page and try again</p>
+                </div>
+            `;
+        } finally {
+            isLoading = false;
         }
     }
     
@@ -285,7 +423,29 @@
         return div.innerHTML;
     }
     
-    // Load content when page loads
+    // Set active sort option in UI
+    function setActiveSortUI() {
+        document.querySelectorAll('.sort-option').forEach(opt => {
+            opt.classList.remove('active');
+            if (opt.getAttribute('data-sort') === currentSort) {
+                opt.classList.add('active');
+            }
+        });
+    }
+    
+    // Set active category in UI
+    function setActiveCategoryUI() {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-category') === currentCategory) {
+                btn.classList.add('active');
+            }
+        });
+    }
+    
+    // Initialize UI and load content
+    setActiveSortUI();
+    setActiveCategoryUI();
     loadContent();
 </script>
 </body>
