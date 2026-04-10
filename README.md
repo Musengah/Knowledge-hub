@@ -7,7 +7,7 @@ A free, open digital library where anyone can access and share educational resou
 
 ## 🌟 Live Demo
 
-[View Live Site](https://knowledge-hub.vercel.app)
+[View Live Site](https://knowledge-hub-nine.vercel.app/)
 
 ## ✨ Features
 
