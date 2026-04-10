@@ -272,149 +272,118 @@
     }
     
     async function loadContent() {
-        if (isLoading) return;
-        isLoading = true;
+    if (isLoading) return;
+    isLoading = true;
+    
+    const container = document.getElementById('results-grid');
+    container.innerHTML = '<div class="content-card" style="padding: 60px; text-align: center;">⏳ Loading resources...</div>';
+    
+    try {
+        // ... (keep your existing query code)
         
-        const container = document.getElementById('results-grid');
-        container.innerHTML = '<div class="content-card" style="padding: 40px; text-align: center;">⏳ Loading resources...</div>';
-        
-        try {
-            // Build queries for videos and documents
-            let videoQuery = supabaseClient.from('videos').select('*');
-            let docQuery = supabaseClient.from('documents').select('*');
-            
-            // Apply category filter
-            if (currentCategory !== 'all') {
-                videoQuery = videoQuery.eq('category', currentCategory);
-                docQuery = docQuery.eq('category', currentCategory);
-            }
-            
-            // Apply search filter
-            if (currentSearch && currentSearch.trim() !== '') {
-                const searchTerm = currentSearch.trim();
-                videoQuery = videoQuery.or(`title.ilike.%${searchTerm}%,tags.ilike.%${searchTerm}%,institution.ilike.%${searchTerm}%`);
-                docQuery = docQuery.or(`title.ilike.%${searchTerm}%,tags.ilike.%${searchTerm}%,institution.ilike.%${searchTerm}%`);
-            }
-            
-            // Apply sorting
-            const order = currentSort === 'recent' ? { ascending: false } : { ascending: true };
-            videoQuery = videoQuery.order('created_at', order);
-            docQuery = docQuery.order('created_at', order);
-            
-            // Execute both queries
-            const [videosResult, docsResult] = await Promise.all([videoQuery, docQuery]);
-            
-            const videos = videosResult.data || [];
-            const documents = docsResult.data || [];
-            
-            // Combine and sort
-            let allItems = [
-                ...videos.map(v => ({ ...v, type: 'video' })),
-                ...documents.map(d => ({ ...d, type: 'document' }))
-            ];
-            
-            // Sort combined list
-            allItems.sort((a, b) => {
-                const dateA = new Date(a.created_at);
-                const dateB = new Date(b.created_at);
-                return currentSort === 'recent' ? dateB - dateA : dateA - dateB;
-            });
-            
-            // Update results count
-            const videoCount = videos.length;
-            const docCount = documents.length;
-            document.getElementById('results-count').innerHTML = `📹 ${videoCount} video${videoCount !== 1 ? 's' : ''} & 📄 ${docCount} document${docCount !== 1 ? 's' : ''} · Total: ${allItems.length}`;
-            
-            if (allItems.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔍</div>
-                        <h3 style="margin-bottom: 8px;">No resources found</h3>
-                        <p style="color: #64748b;">Try adjusting your search or category filter</p>
-                        <a href="upload.html" style="color: #2563eb; margin-top: 16px; display: inline-block;">➕ Be the first to upload something</a>
-                    </div>
-                `;
-                isLoading = false;
-                return;
-            }
-            
-            // Render results
-            let html = '';
-            for (let item of allItems) {
-                if (item.type === 'video') {
-                    const thumbnailUrl = `https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg`;
-                    html += `
-                        <a href="video.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block; overflow: hidden;">
-                            <div class="card-thumbnail" style="position: relative;">
-                                <img src="${thumbnailUrl}" alt="${escapeHtml(item.title)}" style="width: 100%; height: 160px; object-fit: cover;">
-                                <div class="type-badge video">🎬 VIDEO</div>
-                            </div>
-                            <div class="card-content">
-                                <div class="card-title">${escapeHtml(item.title)}</div>
-                                <div class="card-meta">📂 ${escapeHtml(item.category)} ${item.institution ? `· 🏫 ${escapeHtml(item.institution)}` : ''}</div>
-                                <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
-                                <div style="margin-top: 8px; font-size: 0.7rem; color: #94a3b8;">📅 ${new Date(item.created_at).toLocaleDateString()}</div>
-                            </div>
-                        </a>
-                    `;
-                } else {
-                    let icon = '📄';
-                    let typeLabel = 'DOCUMENT';
-                    let color = '#2563eb';
-                    
-                    if (item.file_type === 'pdf') {
-                        icon = '📕';
-                        typeLabel = 'PDF';
-                        color = '#ef4444';
-                    } else if (item.file_type === 'epub') {
-                        icon = '📘';
-                        typeLabel = 'EPUB';
-                        color = '#10b981';
-                    }
-                    
-                    // Format file size
-                    let fileSize = '';
-                    if (item.file_size) {
-                        if (item.file_size < 1024) fileSize = item.file_size + ' B';
-                        else if (item.file_size < 1024 * 1024) fileSize = (item.file_size / 1024).toFixed(1) + ' KB';
-                        else fileSize = (item.file_size / (1024 * 1024)).toFixed(1) + ' MB';
-                    }
-                    
-                    html += `
-                        <a href="document.html?id=${item.id}" class="content-card" style="position: relative; text-decoration: none; color: inherit; display: block; overflow: hidden;">
-                            <div class="card-thumbnail" style="background: ${color}; color: white; display: flex; align-items: center; justify-content: center; font-size: 48px; height: 160px; position: relative;">
-                                ${icon}
-                                <div class="type-badge document" style="background: ${color};">📄 ${typeLabel}</div>
-                            </div>
-                            <div class="card-content">
-                                <div class="card-title">${escapeHtml(item.title)}</div>
-                                <div class="card-meta">📂 ${escapeHtml(item.category)} ${item.institution ? `· 🏫 ${escapeHtml(item.institution)}` : ''}</div>
-                                <div class="card-tags">${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">${escapeHtml(t.trim())}</span>`).join('') : ''}</div>
-                                <div style="margin-top: 8px; display: flex; gap: 12px; font-size: 0.7rem; color: #94a3b8;">
-                                    <span>📅 ${new Date(item.created_at).toLocaleDateString()}</span>
-                                    ${fileSize ? `<span>💾 ${fileSize}</span>` : ''}
-                                </div>
-                            </div>
-                        </a>
-                    `;
-                }
-            }
-            
-            container.innerHTML = html;
-            
-        } catch (error) {
-            console.error('Error loading content:', error);
+        if (allItems.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">⚠️</div>
-                    <h3 style="margin-bottom: 8px;">Error loading resources</h3>
-                    <p style="color: #64748b;">Please refresh the page and try again</p>
+                    <div class="empty-state-icon">🔍</div>
+                    <h3 style="margin-bottom: 8px;">No resources found</h3>
+                    <p style="color: #64748b;">Try adjusting your search or category filter</p>
+                    <a href="upload.html" style="color: #2563eb; margin-top: 16px; display: inline-block;">➕ Be the first to upload something</a>
                 </div>
             `;
-        } finally {
             isLoading = false;
+            return;
         }
+        
+        // Render results with improved card layout
+        let html = '<div class="grid">';
+        
+        for (let item of allItems) {
+            if (item.type === 'video') {
+                const thumbnailUrl = `https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg`;
+                const uploadDate = new Date(item.created_at).toLocaleDateString();
+                
+                html += `
+                    <div class="content-card" onclick="window.location.href='video.html?id=${item.id}'" style="cursor: pointer;">
+                        <div class="card-thumbnail">
+                            <img src="${thumbnailUrl}" alt="${escapeHtml(item.title)}" loading="lazy">
+                            <div class="type-badge-overlay">🎬 Video</div>
+                            <div class="content-badge">📹</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-title">${escapeHtml(item.title)}</div>
+                            <div class="card-meta">
+                                <span>📂 ${escapeHtml(item.category)}</span>
+                                ${item.institution ? `<span>🏫 ${escapeHtml(item.institution)}</span>` : ''}
+                            </div>
+                            <div class="card-meta" style="margin-bottom: 8px; font-size: 0.7rem;">
+                                📅 ${uploadDate}
+                            </div>
+                            <div class="card-tags">
+                                ${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">#${escapeHtml(t.trim())}</span>`).join('') : ''}
+                                ${item.tags && item.tags.split(',').length > 3 ? `<span class="tag">+${item.tags.split(',').length - 3}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let icon = '📄';
+                let typeName = item.file_type?.toUpperCase() || 'DOC';
+                let gradient = 'linear-gradient(135deg, #667eea, #764ba2)';
+                
+                if (item.file_type === 'pdf') {
+                    icon = '📕';
+                    gradient = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                } else if (item.file_type === 'epub') {
+                    icon = '📘';
+                    gradient = 'linear-gradient(135deg, #10b981, #059669)';
+                }
+                
+                let fileSize = '';
+                if (item.file_size) {
+                    if (item.file_size < 1024) fileSize = item.file_size + ' B';
+                    else if (item.file_size < 1024 * 1024) fileSize = (item.file_size / 1024).toFixed(0) + ' KB';
+                    else fileSize = (item.file_size / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+                
+                const uploadDate = new Date(item.created_at).toLocaleDateString();
+                
+                html += `
+                    <div class="content-card" onclick="window.location.href='document.html?id=${item.id}'" style="cursor: pointer;">
+                        <div class="card-thumbnail" style="background: ${gradient}; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 3rem;">${icon}</span>
+                            <div class="type-badge-overlay" style="background: rgba(0,0,0,0.6);">📄 ${typeName}</div>
+                            <div class="content-badge">📄</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-title">${escapeHtml(item.title)}</div>
+                            <div class="card-meta">
+                                <span>📂 ${escapeHtml(item.category)}</span>
+                                ${item.institution ? `<span>🏫 ${escapeHtml(item.institution)}</span>` : ''}
+                            </div>
+                            <div class="card-meta" style="margin-bottom: 8px; font-size: 0.7rem;">
+                                ${fileSize ? `<span>💾 ${fileSize}</span>` : ''}
+                                <span>📅 ${uploadDate}</span>
+                            </div>
+                            <div class="card-tags">
+                                ${item.tags ? item.tags.split(',').slice(0,3).map(t => `<span class="tag">#${escapeHtml(t.trim())}</span>`).join('') : ''}
+                                ${item.tags && item.tags.split(',').length > 3 ? `<span class="tag">+${item.tags.split(',').length - 3}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading content:', error);
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Error loading resources</h3><p>Please refresh the page and try again.</p></div>';
+    } finally {
+        isLoading = false;
     }
+}
     
     function escapeHtml(text) {
         if (!text) return '';
