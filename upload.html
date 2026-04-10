@@ -1,426 +1,546 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload - Knowledge Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
+        .upload-container {
+            max-width: 700px;
             margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
         }
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 {
-            margin: 0;
-            color: #2c3e50;
-        }
-        .nav-links a {
-            margin-left: 20px;
-            color: #3498db;
-            text-decoration: none;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .tab-bar {
-            display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 30px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
+            background: white;
+            padding: 8px;
+            border-radius: 60px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        
         .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            color: #7f8c8d;
+            flex: 1;
+            padding: 14px 20px;
             background: none;
             border: none;
-            font-size: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: all 0.2s;
+            color: #64748b;
         }
+        
         .tab.active {
-            background: #3498db;
+            background: #2563eb;
             color: white;
         }
+        
         .upload-area {
-            border: 2px dashed #3498db;
-            border-radius: 8px;
-            padding: 40px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 50px 30px;
             text-align: center;
-            margin-bottom: 20px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.2s;
+            margin-bottom: 25px;
+            background: #f8fafc;
         }
-        .upload-area:hover {
-            background: #f0f9ff;
+        
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
         }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        
         .file-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
             display: none;
         }
+        
         .file-name {
-            font-weight: bold;
+            font-weight: 600;
+            color: #1e293b;
             word-break: break-all;
         }
+        
         .file-size {
-            color: #7f8c8d;
-            font-size: 0.9em;
+            color: #64748b;
+            font-size: 0.85rem;
             margin-top: 5px;
         }
+        
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .form-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .form-subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 32px;
+        }
+        
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
-        label {
+        
+        .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
         }
-        input, select, textarea {
+        
+        .form-group label .required {
+            color: #ef4444;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
             box-sizing: border-box;
         }
-        button {
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .btn-primary {
             width: 100%;
-            padding: 12px;
-            background: #3498db;
+            padding: 14px;
+            background: #2563eb;
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: background 0.2s;
         }
-        button:disabled {
-            background: #95a5a6;
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-primary:disabled {
+            background: #94a3b8;
             cursor: not-allowed;
         }
-        .message {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
+        
+        .alert {
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
             display: none;
         }
-        .success {
-            background: #d4edda;
-            color: #155724;
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
+        
         .login-prompt {
             text-align: center;
-            padding: 40px;
+            padding: 60px 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .login-prompt a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
+        
+        .supported-formats {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 12px;
         }
-        .debug {
-            background: #f8f9fa;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 12px;
-            margin-top: 20px;
-            display: none;
-            border-radius: 4px;
+        
+        @media (max-width: 768px) {
+            .form-card {
+                padding: 24px;
+            }
+            .tabs {
+                border-radius: 40px;
+            }
+            .tab {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Knowledge Hub</h1>
-        <div class="nav-links">
+
+<header class="header">
+    <div class="header-content">
+        <a href="index.html" class="logo">📚 Knowledge Hub</a>
+        <button class="menu-btn" onclick="document.querySelector('.nav').classList.toggle('open')">☰</button>
+        <nav class="nav">
             <a href="index.html">Home</a>
             <a href="browse.html">Browse</a>
-            <a href="upload.html">Upload</a>
+            <a href="upload.html" class="active">Upload</a>
             <a href="my-uploads.html">My Uploads</a>
-            <a href="login.html">Login</a>
-        </div>
+            <a href="login.html" id="auth-link">Login</a>
+        </nav>
     </div>
+</header>
 
-    <div class="container">
-        <div id="message" class="message"></div>
-        
-        <div id="login-prompt" class="login-prompt" style="display: none;">
-            <p>You need to be logged in to upload.</p>
-            <p><a href="login.html">Click here to log in</a></p>
-        </div>
-        
-        <div id="upload-form" style="display: none;">
-            <div class="tab-bar">
-                <button class="tab active" onclick="switchTab('video')">📹 YouTube Video</button>
+<main class="container upload-container">
+    <div id="message" class="alert"></div>
+    
+    <div id="login-prompt" class="login-prompt" style="display: none;">
+        <div style="font-size: 3rem; margin-bottom: 16px;">🔒</div>
+        <h3>You need to be logged in to upload</h3>
+        <p style="margin: 16px 0; color: #64748b;">Create an account or log in to share educational resources with the community.</p>
+        <a href="login.html" style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 40px; text-decoration: none; display: inline-block; font-weight: 600;">Log In / Sign Up</a>
+    </div>
+    
+    <div id="upload-form" style="display: none;">
+        <div class="form-card">
+            <h1 class="form-title">Share Knowledge</h1>
+            <p class="form-subtitle">Upload a video or document to help others learn</p>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('video')">🎬 YouTube Video</button>
                 <button class="tab" onclick="switchTab('document')">📄 Document (PDF/EPUB)</button>
             </div>
             
-            <div id="video-upload">
+            <!-- Video Form -->
+            <div id="video-form">
                 <div class="form-group">
-                    <label>YouTube URL *</label>
-                    <input type="url" id="youtube-url" placeholder="https://youtube.com/watch?v=...">
+                    <label>YouTube URL <span class="required">*</span></label>
+                    <input type="url" id="video-url" placeholder="https://youtube.com/watch?v=... or https://youtu.be/...">
                 </div>
             </div>
             
-            <div id="document-upload" style="display: none;">
+            <!-- Document Form -->
+            <div id="document-form" style="display: none;">
                 <div class="upload-area" id="drop-area" onclick="document.getElementById('file-input').click()">
-                    <p>📄 Click or drag a file here</p>
-                    <p style="color: #7f8c8d; font-size: 0.9em;">PDF or EPUB (max 50MB)</p>
+                    <div class="upload-icon">📁</div>
+                    <p><strong>Drag & drop a file here</strong></p>
+                    <p style="color: #64748b; margin-top: 8px;">or click to browse</p>
+                    <div class="supported-formats">Supported: PDF, EPUB (max 50MB)</div>
                     <input type="file" id="file-input" accept=".pdf,.epub" style="display: none;" onchange="handleFileSelect(this.files[0])">
                 </div>
+                
                 <div id="file-info" class="file-info">
                     <div class="file-name" id="file-name"></div>
                     <div class="file-size" id="file-size"></div>
                 </div>
             </div>
             
+            <!-- Common Fields -->
             <div class="form-group">
-                <label>Title *</label>
-                <input type="text" id="title">
+                <label>Title <span class="required">*</span></label>
+                <input type="text" id="title" placeholder="Give your resource a clear, descriptive title">
             </div>
             
             <div class="form-group">
-                <label>Category *</label>
+                <label>Category <span class="required">*</span></label>
                 <select id="category">
-                    <option value="">Select</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Physics">Physics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Biology">Biology</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Research Paper">Research Paper</option>
-                    <option value="Other">Other</option>
+                    <option value="">Select a category</option>
+                    <option value="Computer Science">💻 Computer Science</option>
+                    <option value="Mathematics">📐 Mathematics</option>
+                    <option value="Physics">⚡ Physics</option>
+                    <option value="Chemistry">🧪 Chemistry</option>
+                    <option value="Biology">🧬 Biology</option>
+                    <option value="Engineering">🔧 Engineering</option>
+                    <option value="Medicine">💊 Medicine</option>
+                    <option value="History">📜 History</option>
+                    <option value="Literature">📖 Literature</option>
+                    <option value="Philosophy">💭 Philosophy</option>
+                    <option value="Art & Design">🎨 Art & Design</option>
+                    <option value="Music">🎵 Music</option>
+                    <option value="Business">💼 Business</option>
+                    <option value="Economics">📊 Economics</option>
+                    <option value="Language Learning">🗣️ Language Learning</option>
+                    <option value="Research Paper">📑 Research Paper</option>
+                    <option value="Thesis">🎓 Thesis/Dissertation</option>
+                    <option value="Project Report">📋 Project Report</option>
+                    <option value="Other">📁 Other</option>
                 </select>
             </div>
             
             <div class="form-group">
                 <label>Institution (optional)</label>
-                <input type="text" id="institution">
+                <input type="text" id="institution" placeholder="e.g., MIT, Stanford, Khan Academy, or leave blank">
             </div>
             
             <div class="form-group">
-                <label>Tags * (comma separated)</label>
-                <input type="text" id="tags" placeholder="e.g., calculus, research">
+                <label>Tags <span class="required">*</span></label>
+                <input type="text" id="tags" placeholder="e.g., calculus, beginners, lecture, tutorial (comma separated)">
+                <small style="color: #64748b; display: block; margin-top: 5px;">Separate tags with commas</small>
             </div>
             
             <div class="form-group">
                 <label>Description (optional)</label>
-                <textarea id="description" rows="3"></textarea>
+                <textarea id="description" rows="4" placeholder="Add a brief description to help others understand what this resource covers..."></textarea>
             </div>
             
-            <button onclick="submitUpload()" id="submit-btn">Upload</button>
+            <button class="btn-primary" onclick="submitUpload()" id="submit-btn">🚀 Publish Resource</button>
         </div>
-        
-        <div id="debug" class="debug"></div>
     </div>
+</main>
 
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<footer class="footer">
+    <p>Knowledge Hub — A free library of educational resources. Built for students, by everyone.</p>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+    const SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    <script>
-        const _SUPABASE_URL = 'https://wrpmepsxuvpsxwcglwcc.supabase.co';
-        const _SUPABASE_KEY = 'sb_publishable_cpg2ZIj_QEkHcNY0oFQLxA_XZWPeQJi';
-        const _supabase = supabase.createClient(_SUPABASE_URL, _SUPABASE_KEY);
+    let currentTab = 'video';
+    let selectedFile = null;
+    let currentUser = null;
+    
+    // Auth check
+    async function checkAuth() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const authLink = document.getElementById('auth-link');
         
-        let currentTab = 'video';
-        let selectedFile = null;
-        let currentUser = null;
-        
-        function debugLog(msg) {
-            console.log(msg);
-            const debugDiv = document.getElementById('debug');
-            debugDiv.style.display = 'block';
-            debugDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + msg + '<br>';
-        }
-        
-        window.onload = function() {
-            checkAuth();
-        };
-        
-        async function checkAuth() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if (user) {
-                currentUser = user;
-                document.getElementById('login-prompt').style.display = 'none';
-                document.getElementById('upload-form').style.display = 'block';
-                debugLog('Logged in as: ' + user.email);
-            } else {
-                document.getElementById('login-prompt').style.display = 'block';
-                document.getElementById('upload-form').style.display = 'none';
-            }
-        }
-        
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if (tab === 'video') {
-                document.getElementById('video-upload').style.display = 'block';
-                document.getElementById('document-upload').style.display = 'none';
-            } else {
-                document.getElementById('video-upload').style.display = 'none';
-                document.getElementById('document-upload').style.display = 'block';
-            }
-        }
-        
-        const dropArea = document.getElementById('drop-area');
-        if (dropArea) {
-            dropArea.addEventListener('dragover', (e) => {
+        if (user) {
+            currentUser = user;
+            authLink.textContent = 'Logout';
+            authLink.href = '#';
+            authLink.onclick = async (e) => {
                 e.preventDefault();
-                dropArea.classList.add('dragover');
+                await supabaseClient.auth.signOut();
+                window.location.href = 'index.html';
+            };
+            document.getElementById('login-prompt').style.display = 'none';
+            document.getElementById('upload-form').style.display = 'block';
+        } else {
+            authLink.textContent = 'Login';
+            authLink.href = 'login.html';
+            authLink.onclick = null;
+            document.getElementById('login-prompt').style.display = 'block';
+            document.getElementById('upload-form').style.display = 'none';
+        }
+    }
+    checkAuth();
+    
+    function switchTab(tab) {
+        currentTab = tab;
+        
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.remove('active');
+            if (t.textContent.includes(tab === 'video' ? 'YouTube' : 'Document')) {
+                t.classList.add('active');
+            }
+        });
+        
+        if (tab === 'video') {
+            document.getElementById('video-form').style.display = 'block';
+            document.getElementById('document-form').style.display = 'none';
+        } else {
+            document.getElementById('video-form').style.display = 'none';
+            document.getElementById('document-form').style.display = 'block';
+        }
+    }
+    
+    // Drag and drop handlers
+    const dropArea = document.getElementById('drop-area');
+    if (dropArea) {
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            handleFileSelect(file);
+        });
+    }
+    
+    function handleFileSelect(file) {
+        if (!file) return;
+        
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        
+        if (fileExt !== 'pdf' && fileExt !== 'epub') {
+            showMessage('Please select a PDF or EPUB file', 'error');
+            return;
+        }
+        
+        if (file.size > 50 * 1024 * 1024) {
+            showMessage('File size must be less than 50MB', 'error');
+            return;
+        }
+        
+        selectedFile = file;
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('file-size').textContent = formatFileSize(file.size);
+        document.getElementById('file-info').style.display = 'block';
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    
+    async function submitUpload() {
+        const title = document.getElementById('title').value.trim();
+        const category = document.getElementById('category').value;
+        const institution = document.getElementById('institution').value.trim();
+        const tags = document.getElementById('tags').value.trim();
+        const description = document.getElementById('description').value.trim();
+        
+        if (!title || !category || !tags) {
+            showMessage('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        if (currentTab === 'video') {
+            await submitVideo(title, category, institution, tags, description);
+        } else {
+            await submitDocument(title, category, institution, tags, description);
+        }
+    }
+    
+    async function submitVideo(title, category, institution, tags, description) {
+        const url = document.getElementById('video-url').value.trim();
+        
+        if (!url) {
+            showMessage('Please enter a YouTube URL', 'error');
+            return;
+        }
+        
+        let videoId = '';
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname.includes('youtube.com')) {
+                videoId = urlObj.searchParams.get('v');
+            } else if (urlObj.hostname.includes('youtu.be')) {
+                videoId = urlObj.pathname.slice(1);
+            }
+        } catch (e) {
+            showMessage('Invalid YouTube URL', 'error');
+            return;
+        }
+        
+        if (!videoId) {
+            showMessage('Could not extract YouTube video ID', 'error');
+            return;
+        }
+        
+        const { data: existing } = await supabaseClient
+            .from('videos')
+            .select('id')
+            .eq('youtube_id', videoId)
+            .maybeSingle();
+        
+        if (existing) {
+            showMessage('This video is already in the library', 'error');
+            return;
+        }
+        
+        document.getElementById('submit-btn').disabled = true;
+        showMessage('Uploading video...', 'success');
+        
+        const { error } = await supabaseClient
+            .from('videos')
+            .insert({
+                youtube_url: url,
+                youtube_id: videoId,
+                title: title,
+                category: category,
+                institution: institution || null,
+                tags: tags,
+                description: description || null,
+                user_id: currentUser.id,
+                submitter_email: currentUser.email
             });
-            dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
-            dropArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropArea.classList.remove('dragover');
-                handleFileSelect(e.dataTransfer.files[0]);
-            });
+        
+        document.getElementById('submit-btn').disabled = false;
+        
+        if (error) {
+            showMessage('Error: ' + error.message, 'error');
+        } else {
+            showMessage('Video uploaded successfully!', 'success');
+            clearForm();
+        }
+    }
+    
+    async function submitDocument(title, category, institution, tags, description) {
+        if (!selectedFile) {
+            showMessage('Please select a file to upload', 'error');
+            return;
         }
         
-        function handleFileSelect(file) {
-            if (!file) return;
-            debugLog('File selected: ' + file.name + ' (' + file.size + ' bytes)');
-            
-            const fileExt = file.name.split('.').pop().toLowerCase();
-            if (fileExt !== 'pdf' && fileExt !== 'epub') {
-                showMessage('Please select a PDF or EPUB file', 'error');
-                return;
-            }
-            
-            if (file.size > 50 * 1024 * 1024) {
-                showMessage('File size must be less than 50MB', 'error');
-                return;
-            }
-            
-            selectedFile = file;
-            document.getElementById('file-name').textContent = file.name;
-            document.getElementById('file-size').textContent = formatFileSize(file.size);
-            document.getElementById('file-info').style.display = 'block';
-        }
+        document.getElementById('submit-btn').disabled = true;
+        showMessage('Uploading document...', 'success');
         
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-        
-        async function submitUpload() {
-            const title = document.getElementById('title').value;
-            const category = document.getElementById('category').value;
-            const institution = document.getElementById('institution').value;
-            const tags = document.getElementById('tags').value;
-            const description = document.getElementById('description').value;
+        try {
+            const fileExt = selectedFile.name.split('.').pop().toLowerCase();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${currentUser.id}/${fileName}`;
             
-            if (!title || !category || !tags) {
-                showMessage('Please fill in all required fields', 'error');
-                return;
-            }
+            const { error: uploadError } = await supabaseClient.storage
+                .from('documents')
+                .upload(filePath, selectedFile);
             
-            if (currentTab === 'video') {
-                await submitVideo(title, category, institution, tags, description);
-            } else {
-                await submitDocument(title, category, institution, tags, description);
-            }
-        }
-        
-        async function submitVideo(title, category, institution, tags, description) {
-            const url = document.getElementById('youtube-url').value;
-            if (!url) {
-                showMessage('Please enter a YouTube URL', 'error');
-                return;
-            }
+            if (uploadError) throw uploadError;
             
-            let videoId = '';
-            try {
-                const urlObj = new URL(url);
-                if (urlObj.hostname.includes('youtube.com')) {
-                    videoId = urlObj.searchParams.get('v');
-                } else if (urlObj.hostname.includes('youtu.be')) {
-                    videoId = urlObj.pathname.slice(1);
-                }
-            } catch (e) {
-                showMessage('Invalid YouTube URL', 'error');
-                return;
-            }
+            const { data: { publicUrl } } = supabaseClient.storage
+                .from('documents')
+                .getPublicUrl(filePath);
             
-            if (!videoId) {
-                showMessage('Could not extract YouTube video ID', 'error');
-                return;
-            }
-            
-            const { data: existing } = await _supabase.from('videos').select('id').eq('youtube_id', videoId).maybeSingle();
-            if (existing) {
-                showMessage('This video is already in the library', 'error');
-                return;
-            }
-            
-            const { error } = await _supabase.from('videos').insert({
-                youtube_url: url, youtube_id: videoId, title, category,
-                institution: institution || null, tags, description: description || null,
-                user_id: currentUser.id, submitter_email: currentUser.email
-            });
-            
-            if (error) {
-                showMessage('Error: ' + error.message, 'error');
-            } else {
-                showMessage('Video uploaded successfully!', 'success');
-                clearForm();
-            }
-        }
-        
-        async function submitDocument(title, category, institution, tags, description) {
-            if (!selectedFile) {
-                showMessage('Please select a file to upload', 'error');
-                return;
-            }
-            
-            showMessage('Uploading document...', 'success');
-            document.getElementById('submit-btn').disabled = true;
-            debugLog('Starting document upload...');
-            
-            try {
-                const fileExt = selectedFile.name.split('.').pop().toLowerCase();
-                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const filePath = `${currentUser.id}/${fileName}`;
-                debugLog('File path: ' + filePath);
-                
-                debugLog('Uploading to storage bucket "documents"...');
-                const { data: uploadData, error: uploadError } = await _supabase
-                    .storage
-                    .from('documents')
-                    .upload(filePath, selectedFile);
-                
-                if (uploadError) {
-                    debugLog('Upload error: ' + JSON.stringify(uploadError));
-                    throw uploadError;
-                }
-                debugLog('Upload successful!');
-                
-                const { data: { publicUrl } } = _supabase.storage.from('documents').getPublicUrl(filePath);
-                debugLog('Public URL: ' + publicUrl);
-                
-                debugLog('Saving to documents table...');
-                const { error: dbError } = await _supabase.from('documents').insert({
-                    title, category, institution: institution || null, tags,
+            const { error: dbError } = await supabaseClient
+                .from('documents')
+                .insert({
+                    title: title,
+                    category: category,
+                    institution: institution || null,
+                    tags: tags,
                     description: description || null,
                     file_name: selectedFile.name,
                     file_url: publicUrl,
@@ -429,45 +549,41 @@
                     user_id: currentUser.id,
                     submitter_email: currentUser.email
                 });
-                
-                if (dbError) {
-                    debugLog('DB error: ' + JSON.stringify(dbError));
-                    throw dbError;
-                }
-                
-                debugLog('Document saved successfully!');
-                showMessage('Document uploaded successfully!', 'success');
-                clearForm();
-                selectedFile = null;
-                document.getElementById('file-info').style.display = 'none';
-                
-            } catch (error) {
-                debugLog('ERROR: ' + error.message);
-                console.error('Upload error:', error);
-                showMessage('Error uploading document: ' + error.message, 'error');
-            } finally {
-                document.getElementById('submit-btn').disabled = false;
-            }
+            
+            if (dbError) throw dbError;
+            
+            showMessage('Document uploaded successfully!', 'success');
+            clearForm();
+            selectedFile = null;
+            document.getElementById('file-info').style.display = 'none';
+            
+        } catch (error) {
+            console.error('Upload error:', error);
+            showMessage('Error uploading document: ' + error.message, 'error');
+        } finally {
+            document.getElementById('submit-btn').disabled = false;
         }
+    }
+    
+    function clearForm() {
+        document.getElementById('video-url').value = '';
+        document.getElementById('title').value = '';
+        document.getElementById('category').value = '';
+        document.getElementById('institution').value = '';
+        document.getElementById('tags').value = '';
+        document.getElementById('description').value = '';
+    }
+    
+    function showMessage(text, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.textContent = text;
+        msgDiv.className = `alert alert-${type}`;
+        msgDiv.style.display = 'block';
         
-        function clearForm() {
-            document.getElementById('youtube-url').value = '';
-            document.getElementById('title').value = '';
-            document.getElementById('category').value = '';
-            document.getElementById('institution').value = '';
-            document.getElementById('tags').value = '';
-            document.getElementById('description').value = '';
-        }
-        
-        function showMessage(text, type) {
-            const msgDiv = document.getElementById('message');
-            msgDiv.textContent = text;
-            msgDiv.className = `message ${type}`;
-            msgDiv.style.display = 'block';
-            setTimeout(() => {
-                msgDiv.style.display = 'none';
-            }, 5000);
-        }
-    </script>
+        setTimeout(() => {
+            msgDiv.style.display = 'none';
+        }, 5000);
+    }
+</script>
 </body>
 </html>
